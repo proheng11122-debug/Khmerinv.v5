@@ -1250,17 +1250,19 @@ export default function App() {
         <div className="min-h-screen flex flex-col" style={{ backgroundColor: COLORS.bgApp }}>
           {/* Header */}
           <div
-            className="px-4 pt-4 pb-3 border-b"
-            style={{ backgroundColor: '#FFFDF6', borderColor: COLORS.border }}
+            className="px-4 pt-4 pb-4"
+            style={{
+              background: `linear-gradient(135deg, ${COLORS.navyGradientStart}, ${COLORS.navyGradientEnd})`,
+            }}
           >
             <div className="flex justify-between items-center">
               <div className="flex items-center flex-1">
-                <IconBadge icon={ImageIcon} size={INLINE} tint="gold" shape="rounded" />
+                <IconBadge icon={ImageIcon} size={INLINE} tint="light" shape="rounded" />
                 <div className="ml-2.5">
-                  <p className="text-sm font-bold" style={{ color: COLORS.navy }}>
+                  <p className="text-sm font-bold text-white">
                     {profile?.business_name || '...'}
                   </p>
-                  <p className="text-xs" style={{ color: COLORS.muted, ...latinFont }}>
+                  <p className="text-xs text-white/70" style={latinFont}>
                     {profile?.phone || ''}
                   </p>
                 </div>
@@ -1268,20 +1270,17 @@ export default function App() {
               <div className="flex items-center gap-1.5">
                 <button
                   onClick={() => setLang(lang === 'KH' ? 'EN' : 'KH')}
-                  className="flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold text-white"
-                  style={{ backgroundColor: COLORS.navy }}
+                  className="flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold"
+                  style={{ backgroundColor: 'rgba(255,255,255,0.18)', color: '#FFFFFF' }}
                 >
                   <Languages size={14} color="#FFFFFF" strokeWidth={2} />
                   {lang === 'KH' ? 'ខ្មែរ' : 'EN'}
                 </button>
-                <IconBtn icon={Bell} tint="navy" aria-label="Notifications" onClick={() => setShowSubscription(true)} />
-                <IconBtn icon={LogOut} tint="navy" onClick={handleLogout} aria-label="Logout" />
+                <IconBtn icon={Bell} tint="light" aria-label="Notifications" onClick={() => setShowSubscription(true)} />
+                <IconBtn icon={LogOut} tint="light" onClick={handleLogout} aria-label="Logout" />
               </div>
             </div>
-            <p
-              className="mt-2.5 text-xs font-semibold"
-              style={{ color: COLORS.goldDark }}
-            >
+            <p className="mt-2.5 text-xs font-semibold text-white/80">
               {new Date().toLocaleDateString(lang === 'KH' ? 'km-KH' : 'en-US', {
                 weekday: 'long',
                 day: 'numeric',
@@ -1294,10 +1293,9 @@ export default function App() {
           {/* Trial banner */}
           {showTrialBanner && (
             <div
-              className="py-1.5 px-4 border-b text-center text-xs font-semibold"
+              className="py-1.5 px-4 text-center text-xs font-semibold"
               style={{
                 backgroundColor: COLORS.goldTint,
-                borderColor: 'rgba(201,168,76,0.3)',
                 color: COLORS.goldDark,
               }}
             >
