@@ -721,7 +721,7 @@ export default function InvoiceScreen({ lang, profile, onBack, editInvoiceId }: 
           onChange={(e) => setCustomerName(e.target.value)}
           placeholder={tr('ឈ្មោះអតិថិជន', 'Customer name')}
           className="w-full rounded-lg border px-3 py-2.5 text-sm outline-none mb-2"
-          style={inputStyle}
+          style={{ ...inputStyle, ...khmerFont }}
         />
         <input
           type="tel"
@@ -791,7 +791,7 @@ export default function InvoiceScreen({ lang, profile, onBack, editInvoiceId }: 
                 onChange={(e) => updateItem(item.id, 'description', e.target.value)}
                 placeholder={tr('ការពិពណ៌នា', 'Description')}
                 className="w-full rounded-lg border px-2.5 py-2 text-sm outline-none mb-2"
-                style={inputStyle}
+                style={{ ...inputStyle, ...khmerFont }}
               />
               <div className="flex gap-2 mb-2">
                 <div className="flex-1">
@@ -926,7 +926,7 @@ export default function InvoiceScreen({ lang, profile, onBack, editInvoiceId }: 
             rows={2}
             placeholder={tr('ចំណាំផ្ទាល់ខ្លួន...', 'Additional notes...')}
             className="w-full rounded-lg border px-3 py-2 text-sm outline-none resize-none"
-            style={inputStyle}
+            style={{ ...inputStyle, ...khmerFont }}
           />
         </div>
       </div>

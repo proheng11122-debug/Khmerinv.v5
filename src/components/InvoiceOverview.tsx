@@ -423,7 +423,7 @@ export default function InvoiceOverview({
               onChange={(e) => setSearch(e.target.value)}
               placeholder={tr('ស្វែងរកតាមឈ្មោះ ឬ ទូរស័ព្ទ', 'Search by name or phone')}
               className="flex-1 bg-transparent text-sm outline-none"
-              style={{ color: COLORS.navy, ...latinFont }}
+              style={{ color: COLORS.navy, ...khmerFont }}
             />
           </div>
           <button
