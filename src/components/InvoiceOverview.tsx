@@ -290,8 +290,8 @@ export default function InvoiceOverview({
     return (
       <div
         key={inv.id}
-        className="bg-white rounded-xl border overflow-hidden"
-        style={{ borderColor: COLORS.border, boxShadow: '0 2px 8px rgba(24,41,62,0.06)' }}
+        className="bg-white rounded-xl overflow-hidden"
+        style={{ boxShadow: '0 2px 8px rgba(12,68,124,0.08)' }}
       >
         {/* Clickable row → preview */}
         <button onClick={() => onPreviewInvoice(inv.id)} className="w-full text-left p-3">
@@ -442,8 +442,8 @@ export default function InvoiceOverview({
           {summaryCards.map((card) => (
             <div
               key={card.label}
-              className="bg-white rounded-xl p-3 border"
-              style={{ borderColor: COLORS.border, boxShadow: '0 2px 8px rgba(24,41,62,0.06)' }}
+              className="bg-white rounded-xl p-3"
+              style={{ boxShadow: '0 2px 8px rgba(12,68,124,0.08)' }}
             >
               <div className="flex items-center gap-2 mb-2">
                 <IconBadge icon={card.icon} size={INLINE} tint={card.tint} shape="rounded" />

@@ -339,7 +339,7 @@ export default function StockScreen({ lang, onBack }: Props) {
       <div className="flex-1 overflow-y-auto p-3.5 pb-24 -mt-2">
         {/* Summary cards */}
         <div className="grid grid-cols-3 gap-2">
-          <div className="p-3 rounded-xl border bg-white" style={{ borderColor: COLORS.border }}>
+          <div className="p-3 rounded-xl bg-white" style={{ boxShadow: '0 2px 8px rgba(12,68,124,0.08)' }}>
             <IconBadge icon={Package} size={INLINE} tint="stock" shape="rounded" />
             <p className="text-[10px] font-semibold mt-1.5" style={{ color: COLORS.muted }}>
               {tr('ចំនួនមុខ', 'Products')}
@@ -348,7 +348,7 @@ export default function StockScreen({ lang, onBack }: Props) {
               {summary.totalItems}
             </p>
           </div>
-          <div className="p-3 rounded-xl border bg-white" style={{ borderColor: COLORS.border }}>
+          <div className="p-3 rounded-xl bg-white" style={{ boxShadow: '0 2px 8px rgba(12,68,124,0.08)' }}>
             <IconBadge icon={AlertTriangle} size={INLINE} tint="danger" shape="rounded" />
             <p className="text-[10px] font-semibold mt-1.5" style={{ color: COLORS.muted }}>
               {tr('ស្តុកទាប', 'Low Stock')}
@@ -411,7 +411,7 @@ export default function StockScreen({ lang, onBack }: Props) {
           {filteredProducts.map((p) => {
             const isLow = p.quantity <= p.low_stock_threshold;
             return (
-              <div key={p.id} className="bg-white rounded-2xl border overflow-hidden" style={{ borderColor: COLORS.border }}>
+              <div key={p.id} className="bg-white rounded-2xl overflow-hidden" style={{ boxShadow: '0 1px 3px rgba(12,68,124,0.08), 0 4px 12px rgba(12,68,124,0.06)', borderLeft: `4px solid ${COLORS.stock}` }}>
                 <div className="p-3.5">
                   <div className="flex justify-between items-start">
                     <div className="flex items-center gap-2.5 flex-1 min-w-0">
