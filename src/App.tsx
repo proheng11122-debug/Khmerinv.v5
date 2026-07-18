@@ -1311,74 +1311,136 @@ export default function App() {
           <div className="flex-1 overflow-y-auto p-3.5 pb-24">
             {/* Balance card */}
             <div
-              className="p-5 rounded-2xl"
-              style={{ backgroundColor: COLORS.gold, boxShadow: '0 4px 10px rgba(24,41,62,0.08)' }}
+              className="relative p-6 rounded-3xl overflow-hidden"
+              style={{
+                background: `linear-gradient(135deg, ${COLORS.navyGradientStart}, ${COLORS.navyGradientEnd})`,
+                boxShadow: '0 8px 20px rgba(12,68,124,0.28), 0 2px 6px rgba(12,68,124,0.15)',
+              }}
             >
-              <p className="text-xs text-white/90">
-                {lang === 'KH' ? 'សមតុល្យសរុប (Total Balance)' : 'Total Balance'}
+              <div
+                className="absolute rounded-full"
+                style={{ width: 140, height: 140, top: -50, right: -40, background: 'rgba(255,255,255,0.06)' }}
+              />
+              <div
+                className="absolute rounded-full"
+                style={{ width: 90, height: 90, bottom: -35, right: 30, background: 'rgba(255,255,255,0.05)' }}
+              />
+              <div className="relative flex items-start justify-between">
+                <p className="text-xs font-semibold text-white/80 tracking-wide">
+                  {lang === 'KH' ? 'សមតុល្យសរុប (Total Balance)' : 'Total Balance'}
+                </p>
+                <div
+                  className="flex items-center justify-center rounded-xl"
+                  style={{ width: 36, height: 36, background: 'rgba(255,255,255,0.15)' }}
+                >
+                  <CreditCard size={18} className="text-white" />
+                </div>
+              </div>
+              <p className="relative text-3xl font-extrabold text-white mt-2" style={latinFont}>
+                {formatMoney(balanceUSD, balanceKHR)}
               </p>
-              <div className="flex justify-between items-center mt-1.5">
-                <span className="text-2xl font-extrabold text-white" style={latinFont}>
-                  {formatMoney(balanceUSD, balanceKHR)}
-                </span>
-                <CreditCard size={28} className="opacity-85 text-white" />
-              </div>
             </div>
 
-            {/* Income / Expense summary cards */}
-            <div className="flex gap-2.5 mt-2.5">
+            {/* Income / Expense / Invoices / Stock — long summary rows */}
+            <div
+              className="relative flex items-center gap-3 p-3.5 rounded-2xl overflow-hidden mt-2.5"
+              style={{
+                background: 'linear-gradient(135deg, #34C77B, #1F9D6B)',
+                boxShadow: '0 5px 12px rgba(31,157,107,0.25)',
+              }}
+            >
+              <TrendingUp
+                size={72}
+                className="absolute opacity-20"
+                style={{ color: '#fff', top: -16, right: -14 }}
+              />
               <div
-                className="flex-1 p-3 rounded-xl border"
-                style={{ backgroundColor: COLORS.successTint, borderColor: COLORS.border }}
+                className="relative flex items-center justify-center rounded-xl flex-shrink-0"
+                style={{ width: 34, height: 34, background: 'rgba(255,255,255,0.22)' }}
               >
-                <IconBadge icon={TrendingUp} size={INLINE} tint="success" shape="rounded" />
-                <p className="text-xs font-semibold mt-2" style={{ color: COLORS.navy }}>
-                  {lang === 'KH' ? 'ចំណូលសរុប' : 'Income'}
-                </p>
-                <p className="text-sm font-bold mt-0.5" style={{ color: COLORS.success, ...latinFont }}>
-                  {formatMoney(incomeUSD, incomeKHR)}
-                </p>
+                <TrendingUp size={18} className="text-white" />
               </div>
-              <div
-                className="flex-1 p-3 rounded-xl border"
-                style={{ backgroundColor: COLORS.dangerTint, borderColor: COLORS.border }}
-              >
-                <IconBadge icon={TrendingDown} size={INLINE} tint="danger" shape="rounded" />
-                <p className="text-xs font-semibold mt-2" style={{ color: COLORS.navy }}>
-                  {lang === 'KH' ? 'ចំណាយសរុប' : 'Expense'}
-                </p>
-                <p className="text-sm font-bold mt-0.5" style={{ color: COLORS.danger, ...latinFont }}>
-                  {formatMoney(expenseUSD, expenseKHR)}
-                </p>
+              <div className="relative flex-1 min-w-0">
+                <p className="text-xs font-semibold text-white/85">{lang === 'KH' ? 'ចំណូលសរុប' : 'Income'}</p>
               </div>
+              <p className="relative text-base font-bold text-white flex-shrink-0" style={latinFont}>
+                {formatMoney(incomeUSD, incomeKHR)}
+              </p>
             </div>
-
-            {/* Invoices / Stock cards */}
-            <div className="flex gap-2.5 mt-2.5">
+            <div
+              className="relative flex items-center gap-3 p-3.5 rounded-2xl overflow-hidden mt-2.5"
+              style={{
+                background: 'linear-gradient(135deg, #F0785C, #E5533D)',
+                boxShadow: '0 5px 12px rgba(229,83,61,0.25)',
+              }}
+            >
+              <TrendingDown
+                size={72}
+                className="absolute opacity-20"
+                style={{ color: '#fff', top: -16, right: -14 }}
+              />
               <div
-                className="flex-1 p-3 rounded-xl border"
-                style={{ backgroundColor: COLORS.goldTint, borderColor: COLORS.border }}
+                className="relative flex items-center justify-center rounded-xl flex-shrink-0"
+                style={{ width: 34, height: 34, background: 'rgba(255,255,255,0.22)' }}
               >
-                <IconBadge icon={Receipt} size={INLINE} tint="invoice" shape="rounded" />
-                <p className="text-xs font-semibold mt-2" style={{ color: COLORS.navy }}>
-                  {lang === 'KH' ? 'វិក្កយបត្រ' : 'Invoices'}
-                </p>
-                <p className="text-sm font-bold mt-0.5" style={{ color: COLORS.navy }}>
-                  {invoiceCount === null ? '...' : invoiceCount} {lang === 'KH' ? 'ច្បាប់' : ''}
-                </p>
+                <TrendingDown size={18} className="text-white" />
               </div>
+              <div className="relative flex-1 min-w-0">
+                <p className="text-xs font-semibold text-white/85">{lang === 'KH' ? 'ចំណាយសរុប' : 'Expense'}</p>
+              </div>
+              <p className="relative text-base font-bold text-white flex-shrink-0" style={latinFont}>
+                {formatMoney(expenseUSD, expenseKHR)}
+              </p>
+            </div>
+            <div
+              className="relative flex items-center gap-3 p-3.5 rounded-2xl overflow-hidden mt-2.5"
+              style={{
+                background: 'linear-gradient(135deg, #4FA3E3, #2E86C1)',
+                boxShadow: '0 5px 12px rgba(46,134,193,0.25)',
+              }}
+            >
+              <Receipt
+                size={72}
+                className="absolute opacity-20"
+                style={{ color: '#fff', top: -16, right: -14 }}
+              />
               <div
-                className="flex-1 p-3 rounded-xl border"
-                style={{ backgroundColor: COLORS.stockTint, borderColor: COLORS.border }}
+                className="relative flex items-center justify-center rounded-xl flex-shrink-0"
+                style={{ width: 34, height: 34, background: 'rgba(255,255,255,0.22)' }}
               >
-                <IconBadge icon={Package} size={INLINE} tint="stock" shape="rounded" />
-                <p className="text-xs font-semibold mt-2" style={{ color: COLORS.navy }}>
-                  {lang === 'KH' ? 'ស្តុកទំនិញ' : 'Stock'}
-                </p>
-                <p className="text-sm font-bold mt-0.5" style={{ color: COLORS.navy }}>
-                  {productCount === null ? '...' : productCount} {lang === 'KH' ? 'មុខ' : ''}
-                </p>
+                <Receipt size={18} className="text-white" />
               </div>
+              <div className="relative flex-1 min-w-0">
+                <p className="text-xs font-semibold text-white/85">{lang === 'KH' ? 'វិក្កយបត្រ' : 'Invoices'}</p>
+              </div>
+              <p className="relative text-base font-bold text-white flex-shrink-0">
+                {invoiceCount === null ? '...' : invoiceCount} {lang === 'KH' ? 'ច្បាប់' : ''}
+              </p>
+            </div>
+            <div
+              className="relative flex items-center gap-3 p-3.5 rounded-2xl overflow-hidden mt-2.5"
+              style={{
+                background: 'linear-gradient(135deg, #17A184, #0F6E56)',
+                boxShadow: '0 5px 12px rgba(15,110,86,0.25)',
+              }}
+            >
+              <Package
+                size={72}
+                className="absolute opacity-20"
+                style={{ color: '#fff', top: -16, right: -14 }}
+              />
+              <div
+                className="relative flex items-center justify-center rounded-xl flex-shrink-0"
+                style={{ width: 34, height: 34, background: 'rgba(255,255,255,0.22)' }}
+              >
+                <Package size={18} className="text-white" />
+              </div>
+              <div className="relative flex-1 min-w-0">
+                <p className="text-xs font-semibold text-white/85">{lang === 'KH' ? 'ស្តុកទំនិញ' : 'Stock'}</p>
+              </div>
+              <p className="relative text-base font-bold text-white flex-shrink-0">
+                {productCount === null ? '...' : productCount} {lang === 'KH' ? 'មុខ' : ''}
+              </p>
             </div>
 
             {/* Quick Actions */}
@@ -1386,8 +1448,8 @@ export default function App() {
               {lang === 'KH' ? 'មុខងាររហ័ស' : 'Quick Actions'}
             </p>
             <div
-              className="flex justify-between bg-white p-3 rounded-2xl border"
-              style={{ borderColor: COLORS.border }}
+              className="flex justify-between bg-white p-3 rounded-2xl"
+              style={{ boxShadow: '0 2px 8px rgba(12,68,124,0.08)' }}
             >
               <button onClick={() => setCurrentScreen('InvoiceOverview')} className="flex flex-col items-center flex-1">
                 <IconBadge icon={Receipt} size={ACTION} tint="invoice" shape="rounded" />
@@ -1434,7 +1496,7 @@ export default function App() {
             <p className="text-sm font-bold mt-5 mb-2" style={{ color: COLORS.navy }}>
               {lang === 'KH' ? 'ប្រវត្តិប្រតិបត្តិការចុងក្រោយ' : 'Recent Transactions'}
             </p>
-            <div className="bg-white rounded-2xl border py-1" style={{ borderColor: COLORS.border }}>
+            <div className="bg-white rounded-2xl py-1" style={{ boxShadow: '0 2px 8px rgba(12,68,124,0.08)' }}>
               {transactionsLoading && (
                 <p className="text-xs text-center py-4" style={{ color: COLORS.muted }}>
                   {lang === 'KH' ? 'កំពុងផ្ទុក...' : 'Loading...'}
@@ -1578,7 +1640,7 @@ export default function App() {
           <div className="flex-1 overflow-y-auto p-3.5 pb-24 -mt-4">
             {/* Summary cards */}
             <div className="grid grid-cols-3 gap-2">
-              <div className="p-3 rounded-xl border bg-white" style={{ borderColor: COLORS.border }}>
+              <div className="p-3 rounded-xl bg-white" style={{ boxShadow: '0 2px 8px rgba(12,68,124,0.08)' }}>
                 <IconBadge icon={TrendingUp} size={INLINE} tint="success" shape="rounded" />
                 <p className="text-[10px] font-semibold mt-1.5" style={{ color: COLORS.muted }}>
                   {lang === 'KH' ? 'ចំណូល' : 'Income'}
@@ -1587,7 +1649,7 @@ export default function App() {
                   {formatMoney(rangeTotals.incomeUSD, rangeTotals.incomeKHR)}
                 </p>
               </div>
-              <div className="p-3 rounded-xl border bg-white" style={{ borderColor: COLORS.border }}>
+              <div className="p-3 rounded-xl bg-white" style={{ boxShadow: '0 2px 8px rgba(12,68,124,0.08)' }}>
                 <IconBadge icon={TrendingDown} size={INLINE} tint="danger" shape="rounded" />
                 <p className="text-[10px] font-semibold mt-1.5" style={{ color: COLORS.muted }}>
                   {lang === 'KH' ? 'ចំណាយ' : 'Expense'}
@@ -1657,7 +1719,8 @@ export default function App() {
               {lang === 'KH' ? 'តារាងប្រតិបត្តិការ' : 'Transactions'}
             </p>
             <div
-              className="bg-white rounded-2xl border overflow-hidden"
+              className="bg-white rounded-2xl overflow-hidden"
+              style={{ boxShadow: '0 2px 8px rgba(12,68,124,0.08)' }}
               style={{ borderColor: COLORS.border }}
             >
               <div className="flex px-3 py-2 border-b" style={{ backgroundColor: '#FAFAF8', borderColor: COLORS.border }}>
