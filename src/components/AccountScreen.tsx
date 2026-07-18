@@ -206,7 +206,7 @@ export default function AccountScreen({ lang, profile, onBack, onLogout, onLangT
         </div>
 
         {/* Business profile */}
-        <div className="bg-white rounded-2xl p-4" style={{ boxShadow: '0 1px 3px rgba(12,68,124,0.08), 0 4px 12px rgba(12,68,124,0.06)', borderLeft: `4px solid ${COLORS.account}` }}>
+        <div className="bg-white rounded-2xl p-4 border" style={{ borderColor: COLORS.border }}>
           <div className="flex items-center gap-2 mb-3">
             <IconBadge icon={Building2} size={INLINE} tint="account" shape="rounded" />
             <p className="text-xs font-bold" style={{ color: COLORS.muted }}>
@@ -267,7 +267,7 @@ export default function AccountScreen({ lang, profile, onBack, onLogout, onLangT
         </div>
 
         {/* QR code for payments */}
-        <div className="bg-white rounded-2xl p-4" style={{ boxShadow: '0 1px 3px rgba(12,68,124,0.08), 0 4px 12px rgba(12,68,124,0.06)', borderLeft: `4px solid ${COLORS.account}` }}>
+        <div className="bg-white rounded-2xl p-4 border" style={{ borderColor: COLORS.border }}>
           <div className="flex items-center gap-2 mb-3">
             <IconBadge icon={QrCode} size={INLINE} tint="account" shape="rounded" />
             <p className="text-xs font-bold" style={{ color: COLORS.muted }}>
@@ -325,7 +325,7 @@ export default function AccountScreen({ lang, profile, onBack, onLogout, onLangT
         </div>
 
         {/* Language */}
-        <div className="bg-white rounded-2xl p-4 flex items-center justify-between" style={{ boxShadow: '0 1px 3px rgba(12,68,124,0.08), 0 4px 12px rgba(12,68,124,0.06)', borderLeft: `4px solid ${COLORS.account}` }}>
+        <div className="bg-white rounded-2xl p-4 border flex items-center justify-between" style={{ borderColor: COLORS.border }}>
           <div className="flex items-center gap-2">
             <IconBadge icon={Languages} size={INLINE} tint="navy" shape="rounded" />
             <p className="text-xs font-bold" style={{ color: COLORS.navy }}>
@@ -342,7 +342,7 @@ export default function AccountScreen({ lang, profile, onBack, onLogout, onLangT
         </div>
 
         {/* Change password */}
-        <div className="bg-white rounded-2xl p-4" style={{ boxShadow: '0 1px 3px rgba(12,68,124,0.08), 0 4px 12px rgba(12,68,124,0.06)', borderLeft: `4px solid ${COLORS.account}` }}>
+        <div className="bg-white rounded-2xl p-4 border" style={{ borderColor: COLORS.border }}>
           <div className="flex items-center gap-2 mb-3">
             <IconBadge icon={Lock} size={INLINE} tint="navy" shape="rounded" />
             <p className="text-xs font-bold" style={{ color: COLORS.muted }}>

@@ -670,7 +670,7 @@ export default function InvoiceScreen({ lang, profile, onBack, editInvoiceId }: 
   const EditTab = () => (
     <div className="space-y-3">
       {/* Identity */}
-      <div className="bg-white rounded-2xl p-4" style={{ boxShadow: '0 1px 3px rgba(12,68,124,0.08), 0 4px 12px rgba(12,68,124,0.06)', borderLeft: `4px solid ${COLORS.invoice}` }}>
+      <div className="bg-white rounded-2xl p-4 border" style={{ borderColor: COLORS.border }}>
         <div className="flex items-center gap-2 mb-3">
           <IconBadge icon={Hash} size={INLINE} tint="invoice" shape="rounded" />
           <p className="text-xs font-bold" style={{ color: COLORS.muted }}>
@@ -709,7 +709,7 @@ export default function InvoiceScreen({ lang, profile, onBack, editInvoiceId }: 
       </div>
 
       {/* Customer */}
-      <div className="bg-white rounded-2xl p-4" style={{ boxShadow: '0 1px 3px rgba(12,68,124,0.08), 0 4px 12px rgba(12,68,124,0.06)', borderLeft: `4px solid ${COLORS.invoice}` }}>
+      <div className="bg-white rounded-2xl p-4 border" style={{ borderColor: COLORS.border }}>
         <div className="flex items-center gap-2 mb-3">
           <IconBadge icon={User} size={INLINE} tint="invoice" shape="rounded" />
           <p className="text-xs font-bold" style={{ color: COLORS.muted }}>
@@ -721,7 +721,7 @@ export default function InvoiceScreen({ lang, profile, onBack, editInvoiceId }: 
           onChange={(e) => setCustomerName(e.target.value)}
           placeholder={tr('ឈ្មោះអតិថិជន', 'Customer name')}
           className="w-full rounded-lg border px-3 py-2.5 text-sm outline-none mb-2"
-          style={{ ...inputStyle, ...khmerFont }}
+          style={inputStyle}
         />
         <input
           type="tel"
@@ -734,7 +734,7 @@ export default function InvoiceScreen({ lang, profile, onBack, editInvoiceId }: 
       </div>
 
       {/* Items */}
-      <div className="bg-white rounded-2xl p-4" style={{ boxShadow: '0 1px 3px rgba(12,68,124,0.08), 0 4px 12px rgba(12,68,124,0.06)', borderLeft: `4px solid ${COLORS.invoice}` }}>
+      <div className="bg-white rounded-2xl p-4 border" style={{ borderColor: COLORS.border }}>
         <div className="flex justify-between items-center mb-3">
           <div className="flex items-center gap-2">
             <IconBadge icon={Package} size={INLINE} tint="invoice" shape="rounded" />
@@ -791,7 +791,7 @@ export default function InvoiceScreen({ lang, profile, onBack, editInvoiceId }: 
                 onChange={(e) => updateItem(item.id, 'description', e.target.value)}
                 placeholder={tr('ការពិពណ៌នា', 'Description')}
                 className="w-full rounded-lg border px-2.5 py-2 text-sm outline-none mb-2"
-                style={{ ...inputStyle, ...khmerFont }}
+                style={inputStyle}
               />
               <div className="flex gap-2 mb-2">
                 <div className="flex-1">
@@ -885,7 +885,7 @@ export default function InvoiceScreen({ lang, profile, onBack, editInvoiceId }: 
       </div>
 
       {/* Currency + Notes */}
-      <div className="bg-white rounded-2xl p-4 space-y-3" style={{ boxShadow: '0 1px 3px rgba(12,68,124,0.08), 0 4px 12px rgba(12,68,124,0.06)', borderLeft: `4px solid ${COLORS.invoice}` }}>
+      <div className="bg-white rounded-2xl p-4 border space-y-3" style={{ borderColor: COLORS.border }}>
         <div>
           <label className="text-xs font-semibold block mb-1.5" style={{ color: COLORS.navy }}>
             {tr('រូបិយប័ណ្ណ', 'Currency')}
@@ -926,13 +926,13 @@ export default function InvoiceScreen({ lang, profile, onBack, editInvoiceId }: 
             rows={2}
             placeholder={tr('ចំណាំផ្ទាល់ខ្លួន...', 'Additional notes...')}
             className="w-full rounded-lg border px-3 py-2 text-sm outline-none resize-none"
-            style={{ ...inputStyle, ...khmerFont }}
+            style={inputStyle}
           />
         </div>
       </div>
 
       {/* Ledger (payments) */}
-      <div className="bg-white rounded-2xl p-4" style={{ boxShadow: '0 1px 3px rgba(12,68,124,0.08), 0 4px 12px rgba(12,68,124,0.06)', borderLeft: `4px solid ${COLORS.invoice}` }}>
+      <div className="bg-white rounded-2xl p-4 border" style={{ borderColor: COLORS.border }}>
         <div className="flex justify-between items-center mb-3">
           <div className="flex items-center gap-2">
             <IconBadge icon={Wallet} size={INLINE} tint="invoice" shape="rounded" />
@@ -989,7 +989,7 @@ export default function InvoiceScreen({ lang, profile, onBack, editInvoiceId }: 
       </div>
 
       {/* Summary */}
-      <div className="bg-white rounded-2xl p-4 space-y-2" style={{ boxShadow: '0 1px 3px rgba(12,68,124,0.08), 0 4px 12px rgba(12,68,124,0.06)', borderLeft: `4px solid ${COLORS.invoice}` }}>
+      <div className="bg-white rounded-2xl p-4 border space-y-2" style={{ borderColor: COLORS.border }}>
         <div className="flex justify-between text-sm">
           <span style={{ color: COLORS.muted }}>{tr('សរុបរង', 'Subtotal')}</span>
           <span className="font-bold" style={{ color: COLORS.navy, ...latinFont }}>
@@ -1074,7 +1074,7 @@ export default function InvoiceScreen({ lang, profile, onBack, editInvoiceId }: 
      ============================================ */
   const SplitTab = () => (
     <div className="space-y-3">
-      <div className="bg-white rounded-2xl p-3" style={{ boxShadow: '0 1px 3px rgba(12,68,124,0.08), 0 4px 12px rgba(12,68,124,0.06)', borderLeft: `4px solid ${COLORS.invoice}` }}>
+      <div className="bg-white rounded-2xl p-3 border" style={{ borderColor: COLORS.border }}>
         <p className="text-xs font-bold mb-2" style={{ color: COLORS.muted }}>
           {tr('ការពិពណ៌នា', 'Quick Edit')}
         </p>
