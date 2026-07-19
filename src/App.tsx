@@ -22,6 +22,7 @@ import {
   Languages,
   User as UserIcon,
   BarChart3,
+  DollarSign,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { supabase } from './lib/supabaseClient';
@@ -31,6 +32,7 @@ import SubscriptionModal from './components/SubscriptionModal';
 import InvoiceOverview from './components/InvoiceOverview';
 import StockScreen from './components/StockScreen';
 import AccountScreen from './components/AccountScreen';
+import ReportScreen from './components/ReportScreen';
 import { COLORS, khmerFont, latinFont, DEFAULT_UNITS } from './lib/theme';
 
 
@@ -41,7 +43,7 @@ const TRIAL_DAYS = 30;
 
 const phoneToEmail = (digits: string) => `${digits}@khinvoice.app`;
 
-type Screen = 'SignIn' | 'SignUp' | 'Home' | 'Finance' | 'InvoiceOverview' | 'Invoice' | 'Stock' | 'Account';
+type Screen = 'SignIn' | 'SignUp' | 'Home' | 'Finance' | 'InvoiceOverview' | 'Invoice' | 'Stock' | 'Account' | 'Report';
 
 interface Profile {
   id: string;
@@ -176,6 +178,7 @@ export default function App() {
   const [newUnitName, setNewUnitName] = useState('');
 
   const [financeRange, setFinanceRange] = useState<'today' | 'month' | 'year' | 'custom'>('today');
+  const [financeCurrency, setFinanceCurrency] = useState<'all' | 'USD' | 'KHR'>('all');
   const [financeCustomStart, setFinanceCustomStart] = useState(() =>
     new Date().toISOString().slice(0, 10)
   );
@@ -380,9 +383,12 @@ export default function App() {
   const filteredTransactions = useMemo(
     () =>
       transactions.filter(
-        (t) => t.transaction_date >= rangeStart && t.transaction_date <= rangeEnd
+        (t) =>
+          t.transaction_date >= rangeStart &&
+          t.transaction_date <= rangeEnd &&
+          (financeCurrency === 'all' || t.currency === financeCurrency)
       ),
-    [transactions, rangeStart, rangeEnd]
+    [transactions, rangeStart, rangeEnd, financeCurrency]
   );
   const rangeTotals = useMemo(() => computeTotals(filteredTransactions), [filteredTransactions]);
 
@@ -1352,9 +1358,39 @@ export default function App() {
                   <CreditCard size={18} className="text-white" />
                 </div>
               </div>
-              <p className="relative text-3xl font-extrabold text-white mt-2" style={latinFont}>
-                {formatMoney(balanceUSD, balanceKHR)}
-              </p>
+
+              {/* Split by currency: USD + KHR, each with its own icon */}
+              <div className="relative flex items-center gap-3 mt-3">
+                <div className="flex items-center gap-2 flex-1">
+                  <div
+                    className="flex items-center justify-center rounded-lg flex-shrink-0"
+                    style={{ width: 30, height: 30, background: 'rgba(255,255,255,0.16)' }}
+                  >
+                    <DollarSign size={16} className="text-white" />
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-[10px] text-white/65">USD</p>
+                    <p className="text-lg font-extrabold text-white truncate" style={latinFont}>
+                      ${balanceUSD.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                    </p>
+                  </div>
+                </div>
+                <div className="w-px self-stretch" style={{ background: 'rgba(255,255,255,0.18)' }} />
+                <div className="flex items-center gap-2 flex-1">
+                  <div
+                    className="flex items-center justify-center rounded-lg flex-shrink-0"
+                    style={{ width: 30, height: 30, background: 'rgba(255,255,255,0.16)' }}
+                  >
+                    <span className="text-white text-sm font-bold">៛</span>
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-[10px] text-white/65">KHR</p>
+                    <p className="text-lg font-extrabold text-white truncate" style={latinFont}>
+                      {balanceKHR.toLocaleString()} ៛
+                    </p>
+                  </div>
+                </div>
+              </div>
             </div>
 
             {/* Monthly statistics — bar chart */}
@@ -1679,15 +1715,47 @@ export default function App() {
             >
               <ArrowLeft size={INLINE} color="#FFFFFF" strokeWidth={2} />
             </button>
-            <div>
+            <div className="flex-1">
               <p className="text-white font-bold text-base">{lang === 'KH' ? 'ចំណូល / ចំណាយ' : 'Income / Expense'}</p>
               <p className="text-white/70 text-xs">
                 {lang === 'KH' ? 'តាមដានលំហូរសាច់ប្រាក់អាជីវកម្មរបស់អ្នក' : 'Track your business cash flow'}
               </p>
             </div>
+            <button
+              onClick={() => setCurrentScreen('Report')}
+              aria-label={lang === 'KH' ? 'របាយការណ៍' : 'Report'}
+              className="flex items-center justify-center"
+              style={{ width: 44, height: 44, borderRadius: 12, backgroundColor: 'rgba(255,255,255,0.18)' }}
+            >
+              <BarChart3 size={INLINE} color="#FFFFFF" strokeWidth={2} />
+            </button>
           </div>
 
           <div className="flex-1 overflow-y-auto p-3.5 pb-24 -mt-4">
+            {/* Currency view toggle — filter income/expense by USD, KHR (Riel), or both */}
+            <div className="flex gap-2 mb-2.5">
+              {[
+                { key: 'all' as const, label: lang === 'KH' ? 'ទាំងអស់' : 'All', icon: Wallet },
+                { key: 'USD' as const, label: 'USD ($)', icon: DollarSign },
+                { key: 'KHR' as const, label: 'KHR (៛)', icon: Landmark },
+              ].map((c) => (
+                <button
+                  key={c.key}
+                  onClick={() => setFinanceCurrency(c.key)}
+                  aria-label={c.label}
+                  className="flex-1 flex items-center justify-center gap-1 py-2 rounded-lg border text-[11px] font-bold"
+                  style={{
+                    borderColor: COLORS.border,
+                    backgroundColor: financeCurrency === c.key ? COLORS.gold : '#FFFFFF',
+                    color: financeCurrency === c.key ? '#FFFFFF' : COLORS.navy,
+                  }}
+                >
+                  <c.icon size={13} color={financeCurrency === c.key ? '#FFFFFF' : COLORS.navy} strokeWidth={2.2} />
+                  {c.label}
+                </button>
+              ))}
+            </div>
+
             {/* Summary cards */}
             <div className="grid grid-cols-3 gap-2">
               <div className="p-3 rounded-xl bg-white" style={{ boxShadow: '0 2px 8px rgba(12,68,124,0.08)' }}>
@@ -1892,6 +1960,13 @@ export default function App() {
           onLangToggle={() => setLang(lang === 'KH' ? 'EN' : 'KH')}
           onProfileUpdated={(p) => setProfile(p)}
         />
+      )}
+
+      {/* ============================================
+         REPORT
+         ============================================ */}
+      {currentScreen === 'Report' && profile && (
+        <ReportScreen lang={lang} profile={profile} onBack={() => setCurrentScreen('Finance')} />
       )}
 
       {showSubscription && (
