@@ -68,7 +68,7 @@ export default function InvoiceScreen({ lang, profile, onBack, editInvoiceId }: 
   const [currency, setCurrency] = useState<'USD' | 'KHR'>('USD');
   const [discount, setDiscount] = useState('0');
   
-  // Advanced Paid States for accurate payment reporting
+  // Advanced Paid States
   const [paidInput, setPaidInput] = useState('0'); 
   const [paymentDate, setPaymentDate] = useState(() => new Date().toISOString().slice(0, 10));
   const [paymentNote, setPaymentNote] = useState('');
@@ -475,7 +475,7 @@ export default function InvoiceScreen({ lang, profile, onBack, editInvoiceId }: 
                 </div>
               </div>
 
-              {/* Advanced Payments Reporting Date & Note (Added for exact report match) */}
+              {/* Advanced Payments Reporting */}
               {parseFloat(paidInput) > 0 && (
                 <div className="pt-2 mt-2 border-t border-gray-100 space-y-2">
                   <div>
@@ -556,33 +556,40 @@ export default function InvoiceScreen({ lang, profile, onBack, editInvoiceId }: 
           </div>
         ) : (
           /* =========================================================
-             INVOICE PREVIEW MODE (Fully customized according to specs)
+             INVOICE PREVIEW MODE (Geometric Elegant Style Template)
              ========================================================= */
           <div ref={previewRef} className="bg-white rounded-2xl overflow-hidden border" style={{ boxShadow: '0 4px 25px rgba(24,41,62,0.06)', borderColor: COLORS.border }}>
             
-            {/* Centered Business Name Big Highlighted Banner */}
-            <div className="p-6 text-center border-b flex flex-col items-center justify-center" style={{ background: 'linear-gradient(180deg, #F0F6FD 0%, #FFFFFF 100%)', borderColor: COLORS.border }}>
-              <div className="w-14 h-14 rounded-full bg-blue-600 shadow-md flex items-center justify-center text-white text-2xl font-black mb-2">
-                {profile.business_name ? profile.business_name.charAt(0).toUpperCase() : 'B'}
-              </div>
-              <h2 className="text-xl font-black tracking-wide text-slate-900 drop-shadow-sm uppercase">
-                {profile.business_name || 'Business Name'}
-              </h2>
-              <p className="text-xs font-bold text-blue-600/90 mt-0.5">{profile.phone || '012 345 678'}</p>
+            {/* Custom Geometric Header Design - Inspired by the template style */}
+            <div className="relative pt-8 pb-14 px-6 text-white overflow-hidden" style={{ background: '#0F2942' }}>
+              {/* Geometric Diagonal Decoration Shape Lines */}
+              <div className="absolute bottom-0 right-0 left-0 h-8 bg-[#1D4ED8] transform skew-y-3 origin-bottom-right scale-110"></div>
+              <div className="absolute bottom-0 right-0 left-0 h-6 bg-[#F59E0B] transform -skew-y-2 origin-bottom-left scale-110 opacity-90"></div>
               
-              <div className="mt-3 flex items-center gap-2">
-                <span className="text-[10px] tracking-wider uppercase font-black px-3 py-1 rounded-full bg-slate-900 text-white shadow-sm">
-                  {tr('វិក្កយបត្រ', 'INVOICE')}
-                </span>
-                <span className="text-xs font-extrabold text-slate-700 bg-slate-100 px-2 py-0.5 rounded-md">
-                  #{invoiceNumber ? String(invoiceNumber).padStart(6, '0') : '------'}
-                </span>
+              <div className="relative z-10 flex justify-between items-start">
+                <div>
+                  <div className="w-12 h-12 rounded-xl bg-white shadow-md flex items-center justify-center text-[#0F2942] text-xl font-black mb-2">
+                    {profile.business_name ? profile.business_name.charAt(0).toUpperCase() : 'B'}
+                  </div>
+                  <h2 className="text-lg font-black tracking-wide uppercase">
+                    {profile.business_name || 'Business Name'}
+                  </h2>
+                  <p className="text-xs opacity-80 font-medium mt-0.5">{profile.phone || '012 345 678'}</p>
+                </div>
+
+                <div className="text-right">
+                  <h1 className="text-xl font-black tracking-widest text-[#F59E0B] uppercase">{tr('វិក្កយបត្រ', 'INVOICE')}</h1>
+                  <p className="text-xs font-bold mt-1 bg-white/20 px-2 py-0.5 rounded inline-block">
+                    #{invoiceNumber ? String(invoiceNumber).padStart(6, '0') : '------'}
+                  </p>
+                </div>
               </div>
             </div>
 
-            <div className="p-5">
-              {/* Customer and Issue Dates details */}
-              <div className="grid grid-cols-2 gap-4 mb-5 pb-4 border-b" style={{ borderColor: COLORS.border }}>
+            {/* Content Details Block */}
+            <div className="p-5 relative z-20 bg-white rounded-t-xl -mt-4">
+              {/* Customer and Dates details */}
+              <div className="grid grid-cols-2 gap-4 mb-6 pb-4 border-b border-gray-100">
                 <div>
                   <p className="text-[10px] font-black text-slate-400 uppercase tracking-wider mb-1">{tr('អតិថិជន', 'BILL TO')}</p>
                   <p className="text-sm font-black text-slate-800">{customerName || '---'}</p>
@@ -595,14 +602,14 @@ export default function InvoiceScreen({ lang, profile, onBack, editInvoiceId }: 
                 </div>
               </div>
 
-              {/* Items List Table with Colored Heading Rows */}
-              <table className="w-full mb-5">
+              {/* Items List Table with Dark Contrast Accent Header */}
+              <table className="w-full mb-6">
                 <thead>
-                  <tr className="bg-slate-900 text-white rounded-lg">
-                    <th className="text-xs font-bold px-3 py-2 text-left rounded-l-lg">{tr('ការពិពណ៌នា', 'Description')}</th>
+                  <tr className="bg-[#0F2942] text-white">
+                    <th className="text-xs font-bold px-3 py-2 text-left rounded-l">{tr('ការពិពណ៌នា', 'Description')}</th>
                     <th className="text-xs font-bold py-2 text-center">{tr('ចំនួន', 'Qty')}</th>
                     <th className="text-xs font-bold py-2 text-right">{tr('តម្លៃរាយ', 'Price')}</th>
-                    <th className="text-xs font-bold px-3 py-2 text-right rounded-r-lg">{tr('សរុប', 'Total')}</th>
+                    <th className="text-xs font-bold px-3 py-2 text-right rounded-r">{tr('សរុប', 'Total')}</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-100">
@@ -621,9 +628,9 @@ export default function InvoiceScreen({ lang, profile, onBack, editInvoiceId }: 
                 </tbody>
               </table>
 
-              {/* Total Calculation breakdown summary view */}
-              <div className="flex justify-end mb-5">
-                <div className="w-56 space-y-2 text-xs border bg-slate-50/50 p-3 rounded-xl" style={{ borderColor: COLORS.border }}>
+              {/* Summary View Block */}
+              <div className="flex justify-end mb-6">
+                <div className="w-56 space-y-2 text-xs border border-gray-100 bg-slate-50/50 p-3 rounded-xl">
                   <div className="flex justify-between text-slate-500 font-medium">
                     <span>{tr('សរុបរង', 'Subtotal')}</span>
                     <span className="font-bold text-slate-800">{fmtMoney(subtotal, currency)}</span>
@@ -635,7 +642,7 @@ export default function InvoiceScreen({ lang, profile, onBack, editInvoiceId }: 
                     </div>
                   )}
                   {paidVal > 0 && (
-                    <div className="space-y-0.5 border-b pb-1.5 mb-1">
+                    <div className="space-y-0.5 border-b border-dashed pb-1.5 mb-1">
                       <div className="flex justify-between text-emerald-600 font-bold">
                         <span>{tr('បានបង់រួច', 'Paid Amount')}</span>
                         <span>{fmtMoney(paidVal, currency)}</span>
@@ -655,11 +662,11 @@ export default function InvoiceScreen({ lang, profile, onBack, editInvoiceId }: 
                 </div>
               </div>
 
-              {/* Bank Transfer QR Code display */}
+              {/* Payment Transfer Section */}
               {qrCodeUrl && (
-                <div className="pt-4 border-t flex flex-col items-center justify-center bg-blue-50/40 rounded-xl p-3" style={{ borderColor: COLORS.border }}>
-                  <img src={qrCodeUrl} alt="Payment QR" className="w-28 h-28 rounded-lg bg-white p-1 border shadow-sm" style={{ borderColor: COLORS.border }} crossOrigin="anonymous" />
-                  <p className="text-[10px] text-blue-800 font-black tracking-wider mt-2 uppercase">{tr('ស្កេន QR ដើម្បីទូទាត់ប្រាក់', 'SCAN QR CODE TO PAY')}</p>
+                <div className="pt-4 border-t border-gray-100 flex flex-col items-center justify-center bg-slate-50/80 rounded-xl p-3">
+                  <img src={qrCodeUrl} alt="Payment QR" className="w-26 h-26 rounded-lg bg-white p-1 border shadow-sm" crossOrigin="anonymous" />
+                  <p className="text-[9px] text-slate-500 font-black tracking-wider mt-2 uppercase">{tr('ស្កេន QR ដើម្បីទូទាត់ប្រាក់', 'SCAN QR CODE TO PAY')}</p>
                 </div>
               )}
             </div>
@@ -667,7 +674,7 @@ export default function InvoiceScreen({ lang, profile, onBack, editInvoiceId }: 
         )}
       </div>
 
-      {/* Popups modals handling section */}
+      {/* Popups modals handling */}
       {showQR && qrCodeUrl && (
         <div className="fixed inset-0 flex items-center justify-center z-50 bg-black/40 px-4" onClick={() => setShowQR(false)}>
           <div className="bg-white rounded-2xl p-5 max-w-xs w-full text-center" onClick={(e) => e.stopPropagation()}>
