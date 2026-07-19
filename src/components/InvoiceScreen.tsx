@@ -13,10 +13,9 @@ import {
   Hash,
   User,
   Package,
-  DollarSign,
-  Coins,
+  Calendar,
+  FileText
 } from 'lucide-react';
-import type { LucideIcon } from 'lucide-react';
 import { supabase } from '../lib/supabaseClient';
 import { IconBadge } from './IconBadge';
 import { COLORS, khmerFont, INLINE, ACTION, DEFAULT_UNITS } from '../lib/theme';
@@ -68,9 +67,13 @@ export default function InvoiceScreen({ lang, profile, onBack, editInvoiceId }: 
   const [dueDate, setDueDate] = useState('');
   const [currency, setCurrency] = useState<'USD' | 'KHR'>('USD');
   const [discount, setDiscount] = useState('0');
-  const [paidInput, setPaidInput] = useState('0'); 
-  const [invoiceNumber, setInvoiceNumber] = useState<number | null>(null);
   
+  // Advanced Paid States for accurate payment reporting
+  const [paidInput, setPaidInput] = useState('0'); 
+  const [paymentDate, setPaymentDate] = useState(() => new Date().toISOString().slice(0, 10));
+  const [paymentNote, setPaymentNote] = useState('');
+
+  const [invoiceNumber, setInvoiceNumber] = useState<number | null>(null);
   const [saveBusy, setSaveBusy] = useState(false);
   const [saveError, setSaveError] = useState('');
   const [saveSuccess, setSaveSuccess] = useState(false);
@@ -106,6 +109,8 @@ export default function InvoiceScreen({ lang, profile, onBack, editInvoiceId }: 
       setCurrency(inv.currency || 'USD');
       setDiscount(String(inv.discount || '0'));
       setPaidInput(String(inv.paid_amount || '0'));
+      if (inv.payment_date) setPaymentDate(inv.payment_date);
+      if (inv.payment_note) setPaymentNote(inv.payment_note);
 
       const { data: itemRows } = await supabase
         .from('invoice_items')
@@ -187,6 +192,8 @@ export default function InvoiceScreen({ lang, profile, onBack, editInvoiceId }: 
       subtotal,
       discount: discountVal,
       paid_amount: paidVal,
+      payment_date: paidVal > 0 ? paymentDate : null,
+      payment_note: paidVal > 0 ? paymentNote.trim() : null,
       currency,
     };
 
@@ -398,21 +405,24 @@ export default function InvoiceScreen({ lang, profile, onBack, editInvoiceId }: 
                     </div>
                     <div>
                       <label className="text-[10px] font-semibold block mb-0.5 text-gray-500">{tr('តម្លៃរាយ', 'Price')}</label>
-                      <input
-                        type="number"
-                        value={item.unit_price}
-                        onChange={(e) => updateItem(item.id, 'unit_price', e.target.value)}
-                        placeholder="0.00"
-                        className="w-full rounded-lg border px-2.5 py-2 text-sm outline-none"
-                        style={inputStyle}
-                      />
+                      <div className="relative flex items-center">
+                        <span className="absolute left-2.5 text-xs font-bold text-gray-400">{currency === 'USD' ? '$' : '៛'}</span>
+                        <input
+                          type="number"
+                          value={item.unit_price}
+                          onChange={(e) => updateItem(item.id, 'unit_price', e.target.value)}
+                          placeholder="0.00"
+                          className="w-full rounded-lg border pl-7 pr-2.5 py-2 text-sm outline-none"
+                          style={inputStyle}
+                        />
+                      </div>
                     </div>
                   </div>
                 </div>
               ))}
             </div>
 
-            {/* Currency, Discount & Paid Payment Controls Section */}
+            {/* Currency, Discount & Payments Controls */}
             <div className="bg-white rounded-2xl p-4 border space-y-3" style={{ borderColor: COLORS.border }}>
               <div>
                 <label className="text-xs font-semibold block mb-1 text-gray-700">{tr('រូបិយប័ណ្ណ', 'Currency')}</label>
@@ -464,6 +474,39 @@ export default function InvoiceScreen({ lang, profile, onBack, editInvoiceId }: 
                   </div>
                 </div>
               </div>
+
+              {/* Advanced Payments Reporting Date & Note (Added for exact report match) */}
+              {parseFloat(paidInput) > 0 && (
+                <div className="pt-2 mt-2 border-t border-gray-100 space-y-2">
+                  <div>
+                    <label className="text-[11px] font-bold flex items-center gap-1 text-amber-700">
+                      <Calendar size={12} />
+                      {tr('ថ្ងៃទីអតិថិជនបង់ប្រាក់ (សម្រាប់របាយការណ៍)', 'Payment Date (For Report)')}
+                    </label>
+                    <input
+                      type="date"
+                      value={paymentDate}
+                      onChange={(e) => setPaymentDate(e.target.value)}
+                      className="w-full rounded-lg border px-2.5 py-2 text-xs outline-none mt-1"
+                      style={inputStyle}
+                    />
+                  </div>
+                  <div>
+                    <label className="text-[11px] font-bold flex items-center gap-1 text-slate-600">
+                      <FileText size={12} />
+                      {tr('ចំណាំការបង់ប្រាក់', 'Payment Description/Note')}
+                    </label>
+                    <input
+                      type="text"
+                      value={paymentNote}
+                      onChange={(e) => setPaymentNote(e.target.value)}
+                      placeholder={tr('ឧទាហរណ៍៖ បង់តាមកុងវីង, ABA...', 'e.g. Paid via ABA')}
+                      className="w-full rounded-lg border px-2.5 py-2 text-xs outline-none mt-1"
+                      style={inputStyle}
+                    />
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Financial Summary */}
@@ -512,95 +555,111 @@ export default function InvoiceScreen({ lang, profile, onBack, editInvoiceId }: 
             </div>
           </div>
         ) : (
-          /* Invoice Preview Content Display */
-          <div ref={previewRef} className="bg-white rounded-2xl overflow-hidden border" style={{ boxShadow: '0 4px 20px rgba(24,41,62,0.05)', borderColor: COLORS.border }}>
-            {/* Banner Light Header with Highlight Color */}
-            <div className="p-5 flex justify-between items-center border-b" style={{ background: 'linear-gradient(135deg, #EBF3FC 0%, #FFFFFF 100%)', borderColor: COLORS.border }}>
-              <div className="flex items-center gap-3">
-                <div className="w-12 h-12 rounded-full bg-white shadow-sm flex items-center justify-center border text-xl font-extrabold" style={{ color: COLORS.invoice, borderColor: '#D0E2F7' }}>
-                  {profile.business_name ? profile.business_name.charAt(0).toUpperCase() : 'B'}
-                </div>
-                <div>
-                  <h3 className="text-base font-extrabold" style={{ color: COLORS.navy }}>{profile.business_name || 'Business Name'}</h3>
-                  <p className="text-xs text-gray-500">{profile.phone || '012 345 678'}</p>
-                </div>
+          /* =========================================================
+             INVOICE PREVIEW MODE (Fully customized according to specs)
+             ========================================================= */
+          <div ref={previewRef} className="bg-white rounded-2xl overflow-hidden border" style={{ boxShadow: '0 4px 25px rgba(24,41,62,0.06)', borderColor: COLORS.border }}>
+            
+            {/* Centered Business Name Big Highlighted Banner */}
+            <div className="p-6 text-center border-b flex flex-col items-center justify-center" style={{ background: 'linear-gradient(180deg, #F0F6FD 0%, #FFFFFF 100%)', borderColor: COLORS.border }}>
+              <div className="w-14 h-14 rounded-full bg-blue-600 shadow-md flex items-center justify-center text-white text-2xl font-black mb-2">
+                {profile.business_name ? profile.business_name.charAt(0).toUpperCase() : 'B'}
               </div>
-              <div className="text-right">
-                <span className="text-[10px] uppercase font-bold px-2.5 py-1 rounded-md bg-blue-600 text-white shadow-sm">
+              <h2 className="text-xl font-black tracking-wide text-slate-900 drop-shadow-sm uppercase">
+                {profile.business_name || 'Business Name'}
+              </h2>
+              <p className="text-xs font-bold text-blue-600/90 mt-0.5">{profile.phone || '012 345 678'}</p>
+              
+              <div className="mt-3 flex items-center gap-2">
+                <span className="text-[10px] tracking-wider uppercase font-black px-3 py-1 rounded-full bg-slate-900 text-white shadow-sm">
                   {tr('វិក្កយបត្រ', 'INVOICE')}
                 </span>
-                <p className="text-xs font-bold mt-2" style={{ color: COLORS.navy }}>
+                <span className="text-xs font-extrabold text-slate-700 bg-slate-100 px-2 py-0.5 rounded-md">
                   #{invoiceNumber ? String(invoiceNumber).padStart(6, '0') : '------'}
-                </p>
+                </span>
               </div>
             </div>
 
             <div className="p-5">
+              {/* Customer and Issue Dates details */}
               <div className="grid grid-cols-2 gap-4 mb-5 pb-4 border-b" style={{ borderColor: COLORS.border }}>
                 <div>
-                  <p className="text-[10px] font-bold text-gray-400 uppercase mb-0.5">{tr('អតិថិជន', 'Bill To')}</p>
-                  <p className="text-sm font-bold" style={{ color: COLORS.navy }}>{customerName || '---'}</p>
-                  {customerPhone && <p className="text-xs text-gray-500 mt-0.5">{customerPhone}</p>}
+                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-wider mb-1">{tr('អតិថិជន', 'BILL TO')}</p>
+                  <p className="text-sm font-black text-slate-800">{customerName || '---'}</p>
+                  {customerPhone && <p className="text-xs text-slate-500 font-medium mt-0.5">{customerPhone}</p>}
                 </div>
                 <div className="text-right">
-                  <p className="text-[10px] font-bold text-gray-400 uppercase mb-0.5">{tr('កាលបរិច្ឆេទ', 'Date Info')}</p>
-                  <p className="text-xs text-gray-600">{tr('ថ្ងៃចេញ៖ ', 'Issued: ')}{invoiceDate}</p>
-                  {dueDate && <p className="text-xs text-red-500 mt-0.5">{tr('ផុតកំណត់៖ ', 'Due: ')}{dueDate}</p>}
+                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-wider mb-1">{tr('កាលបរិច្ឆេទ', 'DATES')}</p>
+                  <p className="text-xs text-slate-700 font-semibold">{tr('ថ្ងៃចេញ៖ ', 'Issued: ')}{invoiceDate}</p>
+                  {dueDate && <p className="text-xs text-red-500 font-bold mt-0.5">{tr('ផុតកំណត់៖ ', 'Due: ')}{dueDate}</p>}
                 </div>
               </div>
 
+              {/* Items List Table with Colored Heading Rows */}
               <table className="w-full mb-5">
                 <thead>
-                  <tr className="border-b text-left" style={{ borderColor: COLORS.border }}>
-                    <th className="text-xs font-bold text-gray-400 pb-2">{tr('ការពិពណ៌នា', 'Description')}</th>
-                    <th className="text-xs font-bold text-gray-400 pb-2 text-center">{tr('ចំនួន', 'Qty')}</th>
-                    <th className="text-xs font-bold text-gray-400 pb-2 text-right">{tr('តម្លៃ', 'Price')}</th>
-                    <th className="text-xs font-bold text-gray-400 pb-2 text-right">{tr('សរុប', 'Total')}</th>
+                  <tr className="bg-slate-900 text-white rounded-lg">
+                    <th className="text-xs font-bold px-3 py-2 text-left rounded-l-lg">{tr('ការពិពណ៌នា', 'Description')}</th>
+                    <th className="text-xs font-bold py-2 text-center">{tr('ចំនួន', 'Qty')}</th>
+                    <th className="text-xs font-bold py-2 text-right">{tr('តម្លៃរាយ', 'Price')}</th>
+                    <th className="text-xs font-bold px-3 py-2 text-right rounded-r-lg">{tr('សរុប', 'Total')}</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y" style={{ borderColor: COLORS.border }}>
+                <tbody className="divide-y divide-gray-100">
                   {items.filter((i) => i.description.trim()).map((item) => {
                     const qty = parseFloat(item.quantity) || 0;
                     const price = parseFloat(item.unit_price) || 0;
                     return (
-                      <tr key={item.id}>
-                        <td className="text-xs py-2.5 text-gray-800">{item.description}</td>
-                        <td className="text-xs py-2.5 text-center text-gray-600">{qty} {item.unit}</td>
-                        <td className="text-xs py-2.5 text-right text-gray-600">{fmtMoney(price, currency)}</td>
-                        <td className="text-xs py-2.5 text-right font-bold" style={{ color: COLORS.navy }}>{fmtMoney(qty * price, currency)}</td>
+                      <tr key={item.id} className="hover:bg-slate-50/50">
+                        <td className="text-xs px-3 py-3 font-medium text-slate-800">{item.description}</td>
+                        <td className="text-xs py-3 text-center text-slate-600 font-semibold">{qty} {item.unit}</td>
+                        <td className="text-xs py-3 text-right text-slate-600 font-bold">{fmtMoney(price, currency)}</td>
+                        <td className="text-xs px-3 py-3 text-right font-black text-slate-900">{fmtMoney(qty * price, currency)}</td>
                       </tr>
                     );
                   })}
                 </tbody>
               </table>
 
+              {/* Total Calculation breakdown summary view */}
               <div className="flex justify-end mb-5">
-                <div className="w-52 space-y-2 text-xs">
-                  <div className="flex justify-between text-gray-500">
+                <div className="w-56 space-y-2 text-xs border bg-slate-50/50 p-3 rounded-xl" style={{ borderColor: COLORS.border }}>
+                  <div className="flex justify-between text-slate-500 font-medium">
                     <span>{tr('សរុបរង', 'Subtotal')}</span>
-                    <span className="font-semibold">{fmtMoney(subtotal, currency)}</span>
+                    <span className="font-bold text-slate-800">{fmtMoney(subtotal, currency)}</span>
                   </div>
                   {discountVal > 0 && (
-                    <div className="flex justify-between text-red-500 bg-red-50 px-1.5 py-0.5 rounded">
+                    <div className="flex justify-between text-red-600 font-medium">
                       <span>{tr('បញ្ចុះតម្លៃ (-)', 'Discount (-)')}</span>
                       <span className="font-bold">-{fmtMoney(discountVal, currency)}</span>
                     </div>
                   )}
-                  <div className="flex justify-between text-green-600 bg-green-50 px-1.5 py-0.5 rounded">
-                    <span>{tr('បានបង់', 'Paid')}</span>
-                    <span className="font-bold">{fmtMoney(paidVal, currency)}</span>
-                  </div>
-                  <div className="flex justify-between text-sm pt-2 border-t font-extrabold" style={{ borderColor: COLORS.border }}>
-                    <span style={{ color: COLORS.navy }}>{tr('នៅសល់', 'Balance')}</span>
-                    <span style={{ color: COLORS.danger }}>{fmtMoney(balance, currency)}</span>
+                  {paidVal > 0 && (
+                    <div className="space-y-0.5 border-b pb-1.5 mb-1">
+                      <div className="flex justify-between text-emerald-600 font-bold">
+                        <span>{tr('បានបង់រួច', 'Paid Amount')}</span>
+                        <span>{fmtMoney(paidVal, currency)}</span>
+                      </div>
+                      <p className="text-[9px] text-slate-400 text-right font-medium">
+                        {paymentDate && `${tr('បង់ថ្ងៃទី៖ ', 'Paid on: ')} ${paymentDate}`}
+                        {paymentNote && ` (${paymentNote})`}
+                      </p>
+                    </div>
+                  )}
+                  <div className="flex justify-between text-sm pt-1 font-black">
+                    <span className="text-slate-900">{tr('នៅសល់', 'Balance Due')}</span>
+                    <span className={balance > 0 ? 'text-red-600' : 'text-emerald-600'}>
+                      {fmtMoney(balance, currency)}
+                    </span>
                   </div>
                 </div>
               </div>
 
+              {/* Bank Transfer QR Code display */}
               {qrCodeUrl && (
-                <div className="pt-4 border-t flex flex-col items-center justify-center bg-gray-50 rounded-xl p-3" style={{ borderColor: COLORS.border }}>
-                  <img src={qrCodeUrl} alt="Payment QR" className="w-28 h-28 rounded-lg bg-white p-1 border" style={{ borderColor: COLORS.border }} crossOrigin="anonymous" />
-                  <p className="text-[10px] text-gray-500 font-bold mt-2">{tr('ស្កេន QR ដើម្បីទូទាត់ប្រាក់', 'SCAN QR CODE TO MAKE PAYMENT')}</p>
+                <div className="pt-4 border-t flex flex-col items-center justify-center bg-blue-50/40 rounded-xl p-3" style={{ borderColor: COLORS.border }}>
+                  <img src={qrCodeUrl} alt="Payment QR" className="w-28 h-28 rounded-lg bg-white p-1 border shadow-sm" style={{ borderColor: COLORS.border }} crossOrigin="anonymous" />
+                  <p className="text-[10px] text-blue-800 font-black tracking-wider mt-2 uppercase">{tr('ស្កេន QR ដើម្បីទូទាត់ប្រាក់', 'SCAN QR CODE TO PAY')}</p>
                 </div>
               )}
             </div>
@@ -608,7 +667,7 @@ export default function InvoiceScreen({ lang, profile, onBack, editInvoiceId }: 
         )}
       </div>
 
-      {/* Popups Modals */}
+      {/* Popups modals handling section */}
       {showQR && qrCodeUrl && (
         <div className="fixed inset-0 flex items-center justify-center z-50 bg-black/40 px-4" onClick={() => setShowQR(false)}>
           <div className="bg-white rounded-2xl p-5 max-w-xs w-full text-center" onClick={(e) => e.stopPropagation()}>
@@ -621,7 +680,6 @@ export default function InvoiceScreen({ lang, profile, onBack, editInvoiceId }: 
       {showQRUpload && (
         <div className="fixed inset-0 flex items-center justify-center z-50 bg-black/40 px-4" onClick={() => setShowQRUpload(false)}>
           <div className="bg-white rounded-2xl p-5 max-w-xs w-full text-center" onClick={(e) => e.stopPropagation()}>
-            <IconBadge icon={Upload} size={ACTION} tint="invoice" shape="rounded" />
             <p className="text-sm font-bold mt-2 mb-4 text-slate-800">{tr('បញ្ចូលរូបភាព QR', 'Upload QR Image')}</p>
             <input
               type="file"
