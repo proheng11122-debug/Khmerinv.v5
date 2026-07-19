@@ -53,6 +53,7 @@ interface Profile {
   is_locked: boolean | null;
   trial_started_at: string | null;
   qr_code_url: string | null;
+  avatar_url: string | null;
 }
 
 interface Transaction {
@@ -814,7 +815,11 @@ export default function App() {
       </button>
       <div className="w-16 flex justify-center -mt-3.5">
         <button
-          onClick={() => openAddModal('income')}
+          onClick={() => {
+            setEditInvoiceId(null);
+            setCurrentScreen('Invoice');
+          }}
+          aria-label={lang === 'KH' ? 'បង្កើតវិក្កយបត្រ' : 'Create Invoice'}
           className="w-14 h-14 rounded-full flex items-center justify-center text-white"
           style={{ backgroundColor: COLORS.gold, boxShadow: `0 4px 6px ${COLORS.gold}4D` }}
         >
@@ -1281,7 +1286,16 @@ export default function App() {
           >
             <div className="flex justify-between items-center">
               <div className="flex items-center flex-1">
-                <IconBadge icon={ImageIcon} size={INLINE} tint="light" shape="rounded" />
+                {profile?.avatar_url ? (
+                  <div
+                    className="rounded-xl overflow-hidden flex-shrink-0"
+                    style={{ width: 44, height: 44 }}
+                  >
+                    <img src={profile.avatar_url} alt="" className="w-full h-full object-cover" />
+                  </div>
+                ) : (
+                  <IconBadge icon={ImageIcon} size={INLINE} tint="light" shape="rounded" />
+                )}
                 <div className="ml-2.5">
                   <p className="text-sm font-bold text-white">
                     {profile?.business_name || '...'}
@@ -1576,6 +1590,15 @@ export default function App() {
                   {lang === 'KH' ? 'ប្តូរប្រាក់' : 'Exchange'}
                 </span>
               </button>
+              <button
+                onClick={() => setCurrentScreen('Report')}
+                className="flex flex-col items-center flex-1"
+              >
+                <IconBadge icon={BarChart3} size={ACTION} tint="navy" shape="rounded" />
+                <span className="text-xs mt-1.5" style={{ color: COLORS.navy }}>
+                  {lang === 'KH' ? 'របាយការណ៍' : 'Report'}
+                </span>
+              </button>
             </div>
 
             {/* Recent Transactions */}
@@ -1732,6 +1755,16 @@ export default function App() {
           </div>
 
           <div className="flex-1 overflow-y-auto p-3.5 pb-24 -mt-4">
+            {/* Add income/expense — moved here now that the tab-bar + opens Create Invoice */}
+            <button
+              onClick={() => openAddModal('income')}
+              className="w-full flex items-center justify-center gap-1.5 py-3 rounded-xl font-bold text-white text-sm mb-2.5"
+              style={{ backgroundColor: COLORS.gold, boxShadow: '0 2px 8px rgba(12,68,124,0.15)' }}
+            >
+              <Plus size={18} color="#FFFFFF" strokeWidth={2.5} />
+              {lang === 'KH' ? 'បន្ថែមចំណូល / ចំណាយ' : 'Add Income / Expense'}
+            </button>
+
             {/* Currency view toggle — filter income/expense by USD, KHR (Riel), or both */}
             <div className="flex gap-2 mb-2.5">
               {[
@@ -1959,6 +1992,7 @@ export default function App() {
           onLogout={handleLogout}
           onLangToggle={() => setLang(lang === 'KH' ? 'EN' : 'KH')}
           onProfileUpdated={(p) => setProfile(p)}
+          onOpenSubscription={() => setShowSubscription(true)}
         />
       )}
 
@@ -1966,7 +2000,7 @@ export default function App() {
          REPORT
          ============================================ */}
       {currentScreen === 'Report' && profile && (
-        <ReportScreen lang={lang} profile={profile} onBack={() => setCurrentScreen('Finance')} />
+        <ReportScreen lang={lang} profile={profile} onBack={() => setCurrentScreen('Home')} />
       )}
 
       {showSubscription && (
