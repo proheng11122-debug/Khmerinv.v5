@@ -578,12 +578,12 @@ export default function App() {
      ============================================ */
   const AddTransactionModal = () => (
     <div
-      className="fixed inset-0 flex items-start justify-center z-40 overflow-y-auto py-6 px-3.5"
+      className="fixed inset-0 flex items-end z-40"
       style={{ backgroundColor: 'rgba(24,41,62,0.4)' }}
     >
       <div
-        className="w-full bg-white rounded-2xl p-6 max-h-[90vh] overflow-y-auto"
-        style={{ boxShadow: '0 4px 16px rgba(24,41,62,0.2)' }}
+        className="w-full bg-white rounded-t-2xl p-6 max-h-[85vh] overflow-y-auto"
+        style={{ boxShadow: '0 -4px 10px rgba(24,41,62,0.1)' }}
       >
         <div
           className="flex rounded-lg border p-1 mb-4"
@@ -994,10 +994,10 @@ export default function App() {
 
           <div className="w-full max-w-sm text-center mt-4">
             <p className="text-[10px] font-medium" style={{ color: COLORS.muted }}>
-              {lang === 'KH' ? 'សាងសង់ដោយ iPhone 13 Pro Max' : 'Built with iPhone 13 Pro Max'}
+              Build By: Pang Sokheng
             </p>
             <p className="text-[9px] mt-0.5" style={{ color: COLORS.muted, opacity: 0.7 }}>
-              bolt.new × Claude.ai
+              Support By: @Cluade.com
             </p>
           </div>
         </div>
@@ -1746,9 +1746,9 @@ export default function App() {
             </div>
             <button
               onClick={() => openAddModal('income')}
-              aria-label={lang === 'KH' ? 'បន្ថែមចំណូល / ចំណាយ' : 'Add Income / Expense'}
+              aria-label={lang === 'KH' ? 'បន្ថែមចំណូល/ចំណាយ' : 'Add Income/Expense'}
               className="flex items-center justify-center"
-              style={{ width: 44, height: 44, borderRadius: 12, backgroundColor: COLORS.gold }}
+              style={{ width: 44, height: 44, borderRadius: 12, backgroundColor: 'rgba(255,255,255,0.18)' }}
             >
               <Plus size={INLINE} color="#FFFFFF" strokeWidth={2.5} />
             </button>
@@ -1869,7 +1869,8 @@ export default function App() {
             </p>
             <div
               className="bg-white rounded-2xl overflow-hidden"
-              style={{ boxShadow: '0 2px 8px rgba(12,68,124,0.08)', borderColor: COLORS.border }}
+              style={{ boxShadow: '0 2px 8px rgba(12,68,124,0.08)' }}
+              style={{ borderColor: COLORS.border }}
             >
               <div className="flex px-3 py-2 border-b" style={{ backgroundColor: '#FAFAF8', borderColor: COLORS.border }}>
                 <span className="text-[10px] font-bold flex-[1.2]" style={{ color: COLORS.muted }}>
