@@ -13,6 +13,17 @@ const PLANS: { key: PlanKey; months: number; price: number; labelKh: string; lab
   { key: '1y', months: 12, price: 15, labelKh: '១ ឆ្នាំ', labelEn: '1 Year', tag: 'Best Value' },
 ];
 
+// Each ABA KHQR code has its amount baked in, so every plan needs its own
+// matching QR image. Drop new files in /public and add the path here.
+const QR_BY_PLAN: Record<PlanKey, string | null> = {
+  '1m': '/qr-1m.jpg',
+  '6m': null,
+  '1y': null,
+};
+
+const PAYEE_NAME = 'PANG SOK HENG';
+const PAYEE_ACCOUNT = '900 999 998';
+
 interface Props {
   lang: 'KH' | 'EN';
   trialDaysRemaining: number;
@@ -119,21 +130,64 @@ export default function SubscriptionModal({ lang, trialDaysRemaining, onClose, o
 
               {/* QR + pay */}
               {selectedPlan && (
-                <div className="rounded-xl border p-3.5" style={{ borderColor: COLORS.border, backgroundColor: COLORS.bgApp }}>
-                  <div className="flex items-center gap-2 mb-2.5">
-                    <QrCode size={16} color={COLORS.navy} strokeWidth={2} />
-                    <p className="text-xs font-bold" style={{ color: COLORS.navy }}>
-                      {tr('ស្កេនទូទាត់', 'Scan to Pay')} —{' '}
-                      <span style={latinFont}>${selectedPlan.price}</span>
-                    </p>
-                  </div>
-                  <div className="flex justify-center mb-3">
-                    <img
-                      src="/subscription-qr.png"
-                      alt="Payment QR"
-                      className="w-40 h-40 rounded-lg border object-cover"
-                      style={{ borderColor: COLORS.border }}
-                    />
+                <div>
+                  <div
+                    className="rounded-2xl overflow-hidden mb-3"
+                    style={{ border: `1px solid ${COLORS.border}`, boxShadow: '0 6px 16px rgba(12,68,124,0.10)' }}
+                  >
+                    {/* Card header strip */}
+                    <div
+                      className="px-4 py-2.5 flex items-center gap-2"
+                      style={{ background: `linear-gradient(135deg, ${COLORS.navy} 0%, #185FA5 100%)` }}
+                    >
+                      <QrCode size={15} color="#FFFFFF" strokeWidth={2} />
+                      <p className="text-white text-[11px] font-bold">
+                        {tr('ស្កេនទូទាត់ (KHQR)', 'Scan to Pay (KHQR)')}
+                      </p>
+                    </div>
+
+                    {/* Payee + amount */}
+                    <div className="bg-white pt-3.5 pb-3 text-center px-4">
+                      <p className="text-[10px] font-semibold tracking-wide" style={{ color: COLORS.muted }}>
+                        {PAYEE_NAME}
+                      </p>
+                      <p className="text-[26px] leading-tight font-extrabold mt-0.5" style={{ color: COLORS.gold, ...latinFont }}>
+                        ${selectedPlan.price}
+                        <span className="text-xs font-semibold ml-1" style={{ color: COLORS.muted }}>USD</span>
+                      </p>
+                    </div>
+
+                    {/* Dashed divider like a real payment ticket */}
+                    <div className="mx-4 border-t border-dashed" style={{ borderColor: COLORS.border }} />
+
+                    {/* QR code */}
+                    <div className="bg-white flex justify-center py-4">
+                      {QR_BY_PLAN[selectedPlan.key] ? (
+                        <img
+                          src={QR_BY_PLAN[selectedPlan.key]!}
+                          alt="Payment QR"
+                          className="w-44 h-44 rounded-lg object-contain"
+                        />
+                      ) : (
+                        <div
+                          className="w-44 h-44 rounded-lg flex items-center justify-center text-center text-[11px] p-4"
+                          style={{ backgroundColor: COLORS.bgApp, color: COLORS.muted }}
+                        >
+                          {tr(
+                            'QR សម្រាប់គម្រោងនេះមិនទាន់មាន សូមទាក់ទង Admin ខាងក្រោម',
+                            'QR for this plan is not set up yet — please contact admin below'
+                          )}
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Account number footer */}
+                    <div className="bg-white px-4 pb-3.5 text-center">
+                      <p className="text-[10px]" style={{ color: COLORS.muted }}>
+                        {tr('គណនី USD', 'USD Account')}:{' '}
+                        <span className="font-semibold" style={{ color: COLORS.navy, ...latinFont }}>{PAYEE_ACCOUNT}</span>
+                      </p>
+                    </div>
                   </div>
 
                   {error && (
