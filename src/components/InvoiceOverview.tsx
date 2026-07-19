@@ -15,33 +15,9 @@ import {
 } from 'lucide-react';
 import { supabase } from '../lib/supabaseClient';
 import { IconBadge } from './IconBadge';
+import { COLORS, khmerFont, latinFont, INLINE, ACTION } from '../lib/theme';
 
-const COLORS = {
-  navy: '#0C447C',
-  navyGradientStart: '#0C447C',
-  navyGradientEnd: '#185FA5',
-  navyTint: '#E6F1FB',
-  gold: '#185FA5',
-  goldDark: '#124A7D',
-  goldTint: '#E6F1FB',
-  bgApp: '#F7FAFD',
-  border: '#E1E9F0',
-  success: '#1F9D6B',
-  successTint: '#E8F6F0',
-  danger: '#E5533D',
-  dangerTint: '#FDEDE9',
-  muted: '#6B7B8A',
-  invoice: '#2E86C1',
-  invoiceTint: '#EAF3FB',
-  account: '#E0A93E',
-  accountTint: '#FBF1E0',
-};
 
-const khmerFont: CSSProperties = { fontFamily: "'Battambang', sans-serif" };
-const latinFont: CSSProperties = { fontFamily: "'Inter', sans-serif" };
-
-const INLINE = 20 as const;
-const ACTION = 28 as const;
 
 type RangeKey = 'today' | 'month' | 'year' | 'custom';
 
@@ -290,8 +266,8 @@ export default function InvoiceOverview({
     return (
       <div
         key={inv.id}
-        className="bg-white rounded-xl border overflow-hidden"
-        style={{ borderColor: COLORS.border, boxShadow: '0 2px 8px rgba(24,41,62,0.06)' }}
+        className="bg-white rounded-xl overflow-hidden"
+        style={{ boxShadow: '0 2px 8px rgba(12,68,124,0.08)' }}
       >
         {/* Clickable row → preview */}
         <button onClick={() => onPreviewInvoice(inv.id)} className="w-full text-left p-3">
@@ -423,7 +399,7 @@ export default function InvoiceOverview({
               onChange={(e) => setSearch(e.target.value)}
               placeholder={tr('ស្វែងរកតាមឈ្មោះ ឬ ទូរស័ព្ទ', 'Search by name or phone')}
               className="flex-1 bg-transparent text-sm outline-none"
-              style={{ color: COLORS.navy, ...latinFont }}
+              style={{ color: COLORS.navy, ...khmerFont }}
             />
           </div>
           <button
@@ -442,8 +418,8 @@ export default function InvoiceOverview({
           {summaryCards.map((card) => (
             <div
               key={card.label}
-              className="bg-white rounded-xl p-3 border"
-              style={{ borderColor: COLORS.border, boxShadow: '0 2px 8px rgba(24,41,62,0.06)' }}
+              className="bg-white rounded-xl p-3"
+              style={{ boxShadow: '0 2px 8px rgba(12,68,124,0.08)' }}
             >
               <div className="flex items-center gap-2 mb-2">
                 <IconBadge icon={card.icon} size={INLINE} tint={card.tint} shape="rounded" />
