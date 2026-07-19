@@ -2,8 +2,22 @@ import { useState } from 'react';
 import type { CSSProperties } from 'react';
 import { X, Clock, QrCode, Send, CheckCircle2, Crown } from 'lucide-react';
 import { supabase } from '../lib/supabaseClient';
-import { COLORS, latinFont } from '../lib/theme';
 
+const COLORS = {
+  navy: '#0C447C',
+  gold: '#185FA5',
+  goldDark: '#124A7D',
+  goldTint: '#E6F1FB',
+  bgApp: '#F7FAFD',
+  border: '#E1E9F0',
+  success: '#1F9D6B',
+  successTint: '#E8F6F0',
+  danger: '#E5533D',
+  dangerTint: '#FDEDE9',
+  muted: '#6B7B8A',
+};
+
+const latinFont: CSSProperties = { fontFamily: "'Inter', sans-serif" };
 
 type PlanKey = '1m' | '6m' | '1y';
 

@@ -21,8 +21,6 @@ import {
   LogOut,
   Languages,
   User as UserIcon,
-  BarChart3,
-  DollarSign,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { supabase } from './lib/supabaseClient';
@@ -32,18 +30,42 @@ import SubscriptionModal from './components/SubscriptionModal';
 import InvoiceOverview from './components/InvoiceOverview';
 import StockScreen from './components/StockScreen';
 import AccountScreen from './components/AccountScreen';
-import ReportScreen from './components/ReportScreen';
-import { COLORS, khmerFont, latinFont, DEFAULT_UNITS } from './lib/theme';
 
 
 
+const COLORS = {
+  navy: '#0C447C',
+  navyGradientStart: '#0C447C',
+  navyGradientEnd: '#185FA5',
+  navyTint: '#E6F1FB',
+  gold: '#185FA5',
+  goldDark: '#124A7D',
+  goldTint: '#E6F1FB',
+  bgApp: '#F7FAFD',
+  border: '#E1E9F0',
+  success: '#1F9D6B',
+  successTint: '#E8F6F0',
+  danger: '#E5533D',
+  dangerTint: '#FDEDE9',
+  muted: '#6B7B8A',
+  stock: '#0F6E56',
+  stockTint: '#E1F5EE',
+  invoice: '#2E86C1',
+  invoiceTint: '#EAF3FB',
+  account: '#E0A93E',
+  accountTint: '#FBF1E0',
+};
 
+const khmerFont: CSSProperties = { fontFamily: "'Battambang', sans-serif" };
+const latinFont: CSSProperties = { fontFamily: "'Inter', sans-serif" };
+
+const DEFAULT_UNITS = ['ដុំ', 'កែវ', 'ដប', 'កញ្ចប់', 'គីឡូ', 'សេវា'];
 
 const TRIAL_DAYS = 30;
 
 const phoneToEmail = (digits: string) => `${digits}@khinvoice.app`;
 
-type Screen = 'SignIn' | 'SignUp' | 'Home' | 'Finance' | 'InvoiceOverview' | 'Invoice' | 'Stock' | 'Account' | 'Report';
+type Screen = 'SignIn' | 'SignUp' | 'Home' | 'Finance' | 'InvoiceOverview' | 'Invoice' | 'Stock' | 'Account';
 
 interface Profile {
   id: string;
@@ -53,7 +75,6 @@ interface Profile {
   is_locked: boolean | null;
   trial_started_at: string | null;
   qr_code_url: string | null;
-  avatar_url: string | null;
 }
 
 interface Transaction {
@@ -162,7 +183,6 @@ export default function App() {
   const [transactionsLoading, setTransactionsLoading] = useState(false);
   const [invoiceCount, setInvoiceCount] = useState<number | null>(null);
   const [productCount, setProductCount] = useState<number | null>(null);
-  const [topCustomers, setTopCustomers] = useState<{ name: string; total: number }[]>([]);
   const [showSubscription, setShowSubscription] = useState(false);
   const [customUnits, setCustomUnits] = useState<string[]>([]);
   const [isAddOpen, setIsAddOpen] = useState(false);
@@ -179,7 +199,6 @@ export default function App() {
   const [newUnitName, setNewUnitName] = useState('');
 
   const [financeRange, setFinanceRange] = useState<'today' | 'month' | 'year' | 'custom'>('today');
-  const [financeCurrency, setFinanceCurrency] = useState<'all' | 'USD' | 'KHR'>('all');
   const [financeCustomStart, setFinanceCustomStart] = useState(() =>
     new Date().toISOString().slice(0, 10)
   );
@@ -231,38 +250,12 @@ export default function App() {
   };
 
   const fetchHomeCounts = async () => {
-    const now = new Date();
-    const mStart = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-01`;
-    const mEnd = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(
-      new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate()
-    ).padStart(2, '0')}`;
     const [invRes, prodRes] = await Promise.all([
-      supabase
-        .from('invoices')
-        .select('id', { count: 'exact', head: true })
-        .gte('invoice_date', mStart)
-        .lte('invoice_date', mEnd),
+      supabase.from('invoices').select('id', { count: 'exact', head: true }),
       supabase.from('products').select('id', { count: 'exact', head: true }).eq('is_active', true),
     ]);
     if (!invRes.error) setInvoiceCount(invRes.count ?? 0);
     if (!prodRes.error) setProductCount(prodRes.count ?? 0);
-
-    const { data: custRows, error: custErr } = await supabase
-      .from('invoices')
-      .select('customer_name, subtotal, currency')
-      .eq('currency', 'USD');
-    if (!custErr && custRows) {
-      const totals: Record<string, number> = {};
-      custRows.forEach((row: { customer_name: string; subtotal: number }) => {
-        const name = row.customer_name?.trim() || (lang === 'KH' ? 'អតិថិជនទូទៅ' : 'General customer');
-        totals[name] = (totals[name] || 0) + Number(row.subtotal || 0);
-      });
-      const sorted = Object.entries(totals)
-        .map(([name, total]) => ({ name, total }))
-        .sort((a, b) => b.total - a.total)
-        .slice(0, 5);
-      setTopCustomers(sorted);
-    }
   };
 
   useEffect(() => {
@@ -345,21 +338,6 @@ export default function App() {
     [transactions]
   );
 
-  const now = new Date();
-  const monthStart = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-01`;
-  const monthEnd = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(
-    new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate()
-  ).padStart(2, '0')}`;
-  const monthTransactions = useMemo(
-    () => transactions.filter((t) => t.transaction_date >= monthStart && t.transaction_date <= monthEnd),
-    [transactions, monthStart, monthEnd]
-  );
-  const monthTotals = useMemo(() => computeTotals(monthTransactions), [monthTransactions]);
-  const monthLabel = now.toLocaleDateString(lang === 'KH' ? 'km-KH' : 'en-US', {
-    month: 'long',
-    year: 'numeric',
-  });
-
   const getRangeDates = () => {
     const today = new Date();
     const pad = (n: number) => String(n).padStart(2, '0');
@@ -384,12 +362,9 @@ export default function App() {
   const filteredTransactions = useMemo(
     () =>
       transactions.filter(
-        (t) =>
-          t.transaction_date >= rangeStart &&
-          t.transaction_date <= rangeEnd &&
-          (financeCurrency === 'all' || t.currency === financeCurrency)
+        (t) => t.transaction_date >= rangeStart && t.transaction_date <= rangeEnd
       ),
-    [transactions, rangeStart, rangeEnd, financeCurrency]
+    [transactions, rangeStart, rangeEnd]
   );
   const rangeTotals = useMemo(() => computeTotals(filteredTransactions), [filteredTransactions]);
 
@@ -578,12 +553,12 @@ export default function App() {
      ============================================ */
   const AddTransactionModal = () => (
     <div
-      className="fixed inset-0 flex items-start justify-center z-40 overflow-y-auto py-6 px-3.5"
+      className="fixed inset-0 flex items-end z-40"
       style={{ backgroundColor: 'rgba(24,41,62,0.4)' }}
     >
       <div
-        className="w-full bg-white rounded-2xl p-6 max-h-[90vh] overflow-y-auto"
-        style={{ boxShadow: '0 4px 16px rgba(24,41,62,0.2)' }}
+        className="w-full bg-white rounded-t-2xl p-6 max-h-[85vh] overflow-y-auto"
+        style={{ boxShadow: '0 -4px 10px rgba(24,41,62,0.1)' }}
       >
         <div
           className="flex rounded-lg border p-1 mb-4"
@@ -815,11 +790,7 @@ export default function App() {
       </button>
       <div className="w-16 flex justify-center -mt-3.5">
         <button
-          onClick={() => {
-            setEditInvoiceId(null);
-            setCurrentScreen('Invoice');
-          }}
-          aria-label={lang === 'KH' ? 'បង្កើតវិក្កយបត្រ' : 'Create Invoice'}
+          onClick={() => openAddModal('income')}
           className="w-14 h-14 rounded-full flex items-center justify-center text-white"
           style={{ backgroundColor: COLORS.gold, boxShadow: `0 4px 6px ${COLORS.gold}4D` }}
         >
@@ -1279,28 +1250,17 @@ export default function App() {
         <div className="min-h-screen flex flex-col" style={{ backgroundColor: COLORS.bgApp }}>
           {/* Header */}
           <div
-            className="px-4 pt-4 pb-4"
-            style={{
-              background: `linear-gradient(135deg, ${COLORS.navyGradientStart}, ${COLORS.navyGradientEnd})`,
-            }}
+            className="px-4 pt-4 pb-3 border-b"
+            style={{ backgroundColor: '#FFFDF6', borderColor: COLORS.border }}
           >
             <div className="flex justify-between items-center">
               <div className="flex items-center flex-1">
-                {profile?.avatar_url ? (
-                  <div
-                    className="rounded-xl overflow-hidden flex-shrink-0"
-                    style={{ width: 44, height: 44 }}
-                  >
-                    <img src={profile.avatar_url} alt="" className="w-full h-full object-cover" />
-                  </div>
-                ) : (
-                  <IconBadge icon={ImageIcon} size={INLINE} tint="light" shape="rounded" />
-                )}
+                <IconBadge icon={ImageIcon} size={INLINE} tint="gold" shape="rounded" />
                 <div className="ml-2.5">
-                  <p className="text-sm font-bold text-white">
+                  <p className="text-sm font-bold" style={{ color: COLORS.navy }}>
                     {profile?.business_name || '...'}
                   </p>
-                  <p className="text-xs text-white/70" style={latinFont}>
+                  <p className="text-xs" style={{ color: COLORS.muted, ...latinFont }}>
                     {profile?.phone || ''}
                   </p>
                 </div>
@@ -1308,17 +1268,20 @@ export default function App() {
               <div className="flex items-center gap-1.5">
                 <button
                   onClick={() => setLang(lang === 'KH' ? 'EN' : 'KH')}
-                  className="flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold"
-                  style={{ backgroundColor: 'rgba(255,255,255,0.18)', color: '#FFFFFF' }}
+                  className="flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold text-white"
+                  style={{ backgroundColor: COLORS.navy }}
                 >
                   <Languages size={14} color="#FFFFFF" strokeWidth={2} />
                   {lang === 'KH' ? 'ខ្មែរ' : 'EN'}
                 </button>
-                <IconBtn icon={Bell} tint="light" aria-label="Notifications" onClick={() => setShowSubscription(true)} />
-                <IconBtn icon={LogOut} tint="light" onClick={handleLogout} aria-label="Logout" />
+                <IconBtn icon={Bell} tint="navy" aria-label="Notifications" onClick={() => setShowSubscription(true)} />
+                <IconBtn icon={LogOut} tint="navy" onClick={handleLogout} aria-label="Logout" />
               </div>
             </div>
-            <p className="mt-2.5 text-xs font-semibold text-white/80">
+            <p
+              className="mt-2.5 text-xs font-semibold"
+              style={{ color: COLORS.goldDark }}
+            >
               {new Date().toLocaleDateString(lang === 'KH' ? 'km-KH' : 'en-US', {
                 weekday: 'long',
                 day: 'numeric',
@@ -1331,9 +1294,10 @@ export default function App() {
           {/* Trial banner */}
           {showTrialBanner && (
             <div
-              className="py-1.5 px-4 text-center text-xs font-semibold"
+              className="py-1.5 px-4 border-b text-center text-xs font-semibold"
               style={{
                 backgroundColor: COLORS.goldTint,
+                borderColor: 'rgba(201,168,76,0.3)',
                 color: COLORS.goldDark,
               }}
             >
@@ -1347,209 +1311,83 @@ export default function App() {
           <div className="flex-1 overflow-y-auto p-3.5 pb-24">
             {/* Balance card */}
             <div
-              className="relative p-6 rounded-3xl overflow-hidden"
-              style={{
-                background: `linear-gradient(135deg, ${COLORS.navyGradientStart}, ${COLORS.navyGradientEnd})`,
-                boxShadow: '0 8px 20px rgba(12,68,124,0.28), 0 2px 6px rgba(12,68,124,0.15)',
-              }}
+              className="p-5 rounded-2xl"
+              style={{ backgroundColor: COLORS.gold, boxShadow: '0 4px 10px rgba(24,41,62,0.08)' }}
             >
-              <div
-                className="absolute rounded-full"
-                style={{ width: 140, height: 140, top: -50, right: -40, background: 'rgba(255,255,255,0.06)' }}
-              />
-              <div
-                className="absolute rounded-full"
-                style={{ width: 90, height: 90, bottom: -35, right: 30, background: 'rgba(255,255,255,0.05)' }}
-              />
-              <div className="relative flex items-start justify-between">
-                <p className="text-xs font-semibold text-white/80 tracking-wide">
-                  {lang === 'KH' ? 'សមតុល្យសរុប (Total Balance)' : 'Total Balance'}
-                </p>
-                <div
-                  className="flex items-center justify-center rounded-xl"
-                  style={{ width: 36, height: 36, background: 'rgba(255,255,255,0.15)' }}
-                >
-                  <CreditCard size={18} className="text-white" />
-                </div>
-              </div>
-
-              {/* Split by currency: USD + KHR, each with its own icon */}
-              <div className="relative flex items-center gap-3 mt-3">
-                <div className="flex items-center gap-2 flex-1">
-                  <div
-                    className="flex items-center justify-center rounded-lg flex-shrink-0"
-                    style={{ width: 30, height: 30, background: 'rgba(255,255,255,0.16)' }}
-                  >
-                    <DollarSign size={16} className="text-white" />
-                  </div>
-                  <div className="min-w-0">
-                    <p className="text-[10px] text-white/65">USD</p>
-                    <p className="text-lg font-extrabold text-white truncate" style={latinFont}>
-                      ${balanceUSD.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                    </p>
-                  </div>
-                </div>
-                <div className="w-px self-stretch" style={{ background: 'rgba(255,255,255,0.18)' }} />
-                <div className="flex items-center gap-2 flex-1">
-                  <div
-                    className="flex items-center justify-center rounded-lg flex-shrink-0"
-                    style={{ width: 30, height: 30, background: 'rgba(255,255,255,0.16)' }}
-                  >
-                    <span className="text-white text-sm font-bold">៛</span>
-                  </div>
-                  <div className="min-w-0">
-                    <p className="text-[10px] text-white/65">KHR</p>
-                    <p className="text-lg font-extrabold text-white truncate" style={latinFont}>
-                      {balanceKHR.toLocaleString()} ៛
-                    </p>
-                  </div>
-                </div>
+              <p className="text-xs text-white/90">
+                {lang === 'KH' ? 'សមតុល្យសរុប (Total Balance)' : 'Total Balance'}
+              </p>
+              <div className="flex justify-between items-center mt-1.5">
+                <span className="text-2xl font-extrabold text-white" style={latinFont}>
+                  {formatMoney(balanceUSD, balanceKHR)}
+                </span>
+                <CreditCard size={28} className="opacity-85 text-white" />
               </div>
             </div>
 
-            {/* Monthly statistics — bar chart */}
-            <div
-              className="p-4 rounded-2xl mt-5"
-              style={{ backgroundColor: '#FFFFFF', boxShadow: '0 2px 8px rgba(12,68,124,0.08)' }}
-            >
-              <div className="flex items-center gap-2 mb-3.5">
-                <BarChart3 size={16} style={{ color: COLORS.navy }} />
-                <p className="text-sm font-bold" style={{ color: COLORS.navy }}>
-                  {lang === 'KH' ? `ស្ថិតិសរុប — ${monthLabel}` : `Monthly Statistics — ${monthLabel}`}
-                </p>
-              </div>
-
-              {/* Income vs Expense bar chart */}
-              {(() => {
-                const maxVal = Math.max(monthTotals.incomeUSD, monthTotals.expenseUSD, 1);
-                const incomePct = Math.min(100, (monthTotals.incomeUSD / maxVal) * 100);
-                const expensePct = Math.min(100, (monthTotals.expenseUSD / maxVal) * 100);
-                return (
-                  <div className="space-y-3">
-                    <div>
-                      <div className="flex justify-between items-center mb-1">
-                        <span className="text-xs font-semibold" style={{ color: COLORS.navy }}>
-                          {lang === 'KH' ? 'ចំណូលខែនេះ' : 'Income'}
-                        </span>
-                        <span className="text-xs font-bold" style={{ color: COLORS.success, ...latinFont }}>
-                          {formatMoney(monthTotals.incomeUSD, monthTotals.incomeKHR)}
-                        </span>
-                      </div>
-                      <div className="w-full h-2.5 rounded-full" style={{ backgroundColor: COLORS.successTint }}>
-                        <div
-                          className="h-2.5 rounded-full"
-                          style={{
-                            width: `${incomePct}%`,
-                            background: 'linear-gradient(90deg, #34C77B, #1F9D6B)',
-                          }}
-                        />
-                      </div>
-                    </div>
-                    <div>
-                      <div className="flex justify-between items-center mb-1">
-                        <span className="text-xs font-semibold" style={{ color: COLORS.navy }}>
-                          {lang === 'KH' ? 'ចំណាយខែនេះ' : 'Expense'}
-                        </span>
-                        <span className="text-xs font-bold" style={{ color: COLORS.danger, ...latinFont }}>
-                          {formatMoney(monthTotals.expenseUSD, monthTotals.expenseKHR)}
-                        </span>
-                      </div>
-                      <div className="w-full h-2.5 rounded-full" style={{ backgroundColor: COLORS.dangerTint }}>
-                        <div
-                          className="h-2.5 rounded-full"
-                          style={{
-                            width: `${expensePct}%`,
-                            background: 'linear-gradient(90deg, #F0785C, #E5533D)',
-                          }}
-                        />
-                      </div>
-                    </div>
-                  </div>
-                );
-              })()}
-
-              {/* Invoices / Stock quick counts */}
-              <div className="flex gap-2.5 mt-4 pt-3.5" style={{ borderTop: `1px solid ${COLORS.border}` }}>
-                <div className="flex-1 flex items-center gap-2">
-                  <div
-                    className="flex items-center justify-center rounded-lg flex-shrink-0"
-                    style={{ width: 28, height: 28, backgroundColor: COLORS.invoiceTint }}
-                  >
-                    <Receipt size={14} style={{ color: COLORS.invoice }} />
-                  </div>
-                  <div className="min-w-0">
-                    <p className="text-[10px]" style={{ color: COLORS.muted }}>
-                      {lang === 'KH' ? 'វិក្កយបត្រខែនេះ' : 'Invoices'}
-                    </p>
-                    <p className="text-sm font-bold" style={{ color: COLORS.navy }}>
-                      {invoiceCount === null ? '...' : invoiceCount}
-                    </p>
-                  </div>
-                </div>
-                <div className="flex-1 flex items-center gap-2">
-                  <div
-                    className="flex items-center justify-center rounded-lg flex-shrink-0"
-                    style={{ width: 28, height: 28, backgroundColor: COLORS.stockTint }}
-                  >
-                    <Package size={14} style={{ color: COLORS.stock }} />
-                  </div>
-                  <div className="min-w-0">
-                    <p className="text-[10px]" style={{ color: COLORS.muted }}>
-                      {lang === 'KH' ? 'ស្តុកបច្ចុប្បន្ន' : 'Stock'}
-                    </p>
-                    <p className="text-sm font-bold" style={{ color: COLORS.navy }}>
-                      {productCount === null ? '...' : productCount}
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Top customers by invoice amount */}
-            {topCustomers.length > 0 && (
+            {/* Income / Expense summary cards */}
+            <div className="flex gap-2.5 mt-2.5">
               <div
-                className="p-4 rounded-2xl mt-2.5"
-                style={{ backgroundColor: '#FFFFFF', boxShadow: '0 2px 8px rgba(12,68,124,0.08)' }}
+                className="flex-1 p-3 rounded-xl border"
+                style={{ backgroundColor: COLORS.successTint, borderColor: COLORS.border }}
               >
-                <p className="text-sm font-bold mb-3.5" style={{ color: COLORS.navy }}>
-                  {lang === 'KH' ? 'អតិថិជនកំពូល (តាមទឹកប្រាក់វិក្កយបត្រ)' : 'Top Customers by Invoice Amount'}
+                <IconBadge icon={TrendingUp} size={INLINE} tint="success" shape="rounded" />
+                <p className="text-xs font-semibold mt-2" style={{ color: COLORS.navy }}>
+                  {lang === 'KH' ? 'ចំណូលសរុប' : 'Income'}
                 </p>
-                <div className="space-y-2.5">
-                  {(() => {
-                    const maxTotal = Math.max(...topCustomers.map((c) => c.total), 1);
-                    return topCustomers.map((c) => (
-                      <div key={c.name}>
-                        <div className="flex justify-between items-center mb-1">
-                          <span className="text-xs font-semibold truncate mr-2" style={{ color: COLORS.navy }}>
-                            {c.name}
-                          </span>
-                          <span className="text-xs font-bold flex-shrink-0" style={{ color: COLORS.invoice, ...latinFont }}>
-                            ${c.total.toLocaleString(undefined, { maximumFractionDigits: 2 })}
-                          </span>
-                        </div>
-                        <div className="w-full h-2.5 rounded-full" style={{ backgroundColor: COLORS.invoiceTint }}>
-                          <div
-                            className="h-2.5 rounded-full"
-                            style={{
-                              width: `${Math.max(4, (c.total / maxTotal) * 100)}%`,
-                              background: 'linear-gradient(90deg, #4FA3E3, #2E86C1)',
-                            }}
-                          />
-                        </div>
-                      </div>
-                    ));
-                  })()}
-                </div>
+                <p className="text-sm font-bold mt-0.5" style={{ color: COLORS.success, ...latinFont }}>
+                  {formatMoney(incomeUSD, incomeKHR)}
+                </p>
               </div>
-            )}
+              <div
+                className="flex-1 p-3 rounded-xl border"
+                style={{ backgroundColor: COLORS.dangerTint, borderColor: COLORS.border }}
+              >
+                <IconBadge icon={TrendingDown} size={INLINE} tint="danger" shape="rounded" />
+                <p className="text-xs font-semibold mt-2" style={{ color: COLORS.navy }}>
+                  {lang === 'KH' ? 'ចំណាយសរុប' : 'Expense'}
+                </p>
+                <p className="text-sm font-bold mt-0.5" style={{ color: COLORS.danger, ...latinFont }}>
+                  {formatMoney(expenseUSD, expenseKHR)}
+                </p>
+              </div>
+            </div>
+
+            {/* Invoices / Stock cards */}
+            <div className="flex gap-2.5 mt-2.5">
+              <div
+                className="flex-1 p-3 rounded-xl border"
+                style={{ backgroundColor: COLORS.goldTint, borderColor: COLORS.border }}
+              >
+                <IconBadge icon={Receipt} size={INLINE} tint="invoice" shape="rounded" />
+                <p className="text-xs font-semibold mt-2" style={{ color: COLORS.navy }}>
+                  {lang === 'KH' ? 'វិក្កយបត្រ' : 'Invoices'}
+                </p>
+                <p className="text-sm font-bold mt-0.5" style={{ color: COLORS.navy }}>
+                  {invoiceCount === null ? '...' : invoiceCount} {lang === 'KH' ? 'ច្បាប់' : ''}
+                </p>
+              </div>
+              <div
+                className="flex-1 p-3 rounded-xl border"
+                style={{ backgroundColor: COLORS.stockTint, borderColor: COLORS.border }}
+              >
+                <IconBadge icon={Package} size={INLINE} tint="stock" shape="rounded" />
+                <p className="text-xs font-semibold mt-2" style={{ color: COLORS.navy }}>
+                  {lang === 'KH' ? 'ស្តុកទំនិញ' : 'Stock'}
+                </p>
+                <p className="text-sm font-bold mt-0.5" style={{ color: COLORS.navy }}>
+                  {productCount === null ? '...' : productCount} {lang === 'KH' ? 'មុខ' : ''}
+                </p>
+              </div>
+            </div>
 
             {/* Quick Actions */}
             <p className="text-sm font-bold mt-5 mb-2" style={{ color: COLORS.navy }}>
               {lang === 'KH' ? 'មុខងាររហ័ស' : 'Quick Actions'}
             </p>
             <div
-              className="flex justify-between bg-white p-3 rounded-2xl"
-              style={{ boxShadow: '0 2px 8px rgba(12,68,124,0.08)' }}
+              className="flex justify-between bg-white p-3 rounded-2xl border"
+              style={{ borderColor: COLORS.border }}
             >
               <button onClick={() => setCurrentScreen('InvoiceOverview')} className="flex flex-col items-center flex-1">
                 <IconBadge icon={Receipt} size={ACTION} tint="invoice" shape="rounded" />
@@ -1590,22 +1428,13 @@ export default function App() {
                   {lang === 'KH' ? 'ប្តូរប្រាក់' : 'Exchange'}
                 </span>
               </button>
-              <button
-                onClick={() => setCurrentScreen('Report')}
-                className="flex flex-col items-center flex-1"
-              >
-                <IconBadge icon={BarChart3} size={ACTION} tint="navy" shape="rounded" />
-                <span className="text-xs mt-1.5" style={{ color: COLORS.navy }}>
-                  {lang === 'KH' ? 'របាយការណ៍' : 'Report'}
-                </span>
-              </button>
             </div>
 
             {/* Recent Transactions */}
             <p className="text-sm font-bold mt-5 mb-2" style={{ color: COLORS.navy }}>
               {lang === 'KH' ? 'ប្រវត្តិប្រតិបត្តិការចុងក្រោយ' : 'Recent Transactions'}
             </p>
-            <div className="bg-white rounded-2xl py-1" style={{ boxShadow: '0 2px 8px rgba(12,68,124,0.08)' }}>
+            <div className="bg-white rounded-2xl border py-1" style={{ borderColor: COLORS.border }}>
               {transactionsLoading && (
                 <p className="text-xs text-center py-4" style={{ color: COLORS.muted }}>
                   {lang === 'KH' ? 'កំពុងផ្ទុក...' : 'Loading...'}
@@ -1738,58 +1567,18 @@ export default function App() {
             >
               <ArrowLeft size={INLINE} color="#FFFFFF" strokeWidth={2} />
             </button>
-            <div className="flex-1">
+            <div>
               <p className="text-white font-bold text-base">{lang === 'KH' ? 'ចំណូល / ចំណាយ' : 'Income / Expense'}</p>
               <p className="text-white/70 text-xs">
                 {lang === 'KH' ? 'តាមដានលំហូរសាច់ប្រាក់អាជីវកម្មរបស់អ្នក' : 'Track your business cash flow'}
               </p>
             </div>
-            <button
-              onClick={() => openAddModal('income')}
-              aria-label={lang === 'KH' ? 'បន្ថែមចំណូល / ចំណាយ' : 'Add Income / Expense'}
-              className="flex items-center justify-center"
-              style={{ width: 44, height: 44, borderRadius: 12, backgroundColor: COLORS.gold }}
-            >
-              <Plus size={INLINE} color="#FFFFFF" strokeWidth={2.5} />
-            </button>
-            <button
-              onClick={() => setCurrentScreen('Report')}
-              aria-label={lang === 'KH' ? 'របាយការណ៍' : 'Report'}
-              className="flex items-center justify-center"
-              style={{ width: 44, height: 44, borderRadius: 12, backgroundColor: 'rgba(255,255,255,0.18)' }}
-            >
-              <BarChart3 size={INLINE} color="#FFFFFF" strokeWidth={2} />
-            </button>
           </div>
 
           <div className="flex-1 overflow-y-auto p-3.5 pb-24 -mt-4">
-            {/* Currency view toggle — filter income/expense by USD, KHR (Riel), or both */}
-            <div className="flex gap-2 mb-2.5">
-              {[
-                { key: 'all' as const, label: lang === 'KH' ? 'ទាំងអស់' : 'All', icon: Wallet },
-                { key: 'USD' as const, label: 'USD ($)', icon: DollarSign },
-                { key: 'KHR' as const, label: 'KHR (៛)', icon: Landmark },
-              ].map((c) => (
-                <button
-                  key={c.key}
-                  onClick={() => setFinanceCurrency(c.key)}
-                  aria-label={c.label}
-                  className="flex-1 flex items-center justify-center gap-1 py-2 rounded-lg border text-[11px] font-bold"
-                  style={{
-                    borderColor: COLORS.border,
-                    backgroundColor: financeCurrency === c.key ? COLORS.gold : '#FFFFFF',
-                    color: financeCurrency === c.key ? '#FFFFFF' : COLORS.navy,
-                  }}
-                >
-                  <c.icon size={13} color={financeCurrency === c.key ? '#FFFFFF' : COLORS.navy} strokeWidth={2.2} />
-                  {c.label}
-                </button>
-              ))}
-            </div>
-
             {/* Summary cards */}
             <div className="grid grid-cols-3 gap-2">
-              <div className="p-3 rounded-xl bg-white" style={{ boxShadow: '0 2px 8px rgba(12,68,124,0.08)' }}>
+              <div className="p-3 rounded-xl border bg-white" style={{ borderColor: COLORS.border }}>
                 <IconBadge icon={TrendingUp} size={INLINE} tint="success" shape="rounded" />
                 <p className="text-[10px] font-semibold mt-1.5" style={{ color: COLORS.muted }}>
                   {lang === 'KH' ? 'ចំណូល' : 'Income'}
@@ -1798,7 +1587,7 @@ export default function App() {
                   {formatMoney(rangeTotals.incomeUSD, rangeTotals.incomeKHR)}
                 </p>
               </div>
-              <div className="p-3 rounded-xl bg-white" style={{ boxShadow: '0 2px 8px rgba(12,68,124,0.08)' }}>
+              <div className="p-3 rounded-xl border bg-white" style={{ borderColor: COLORS.border }}>
                 <IconBadge icon={TrendingDown} size={INLINE} tint="danger" shape="rounded" />
                 <p className="text-[10px] font-semibold mt-1.5" style={{ color: COLORS.muted }}>
                   {lang === 'KH' ? 'ចំណាយ' : 'Expense'}
@@ -1868,8 +1657,8 @@ export default function App() {
               {lang === 'KH' ? 'តារាងប្រតិបត្តិការ' : 'Transactions'}
             </p>
             <div
-              className="bg-white rounded-2xl overflow-hidden"
-              style={{ boxShadow: '0 2px 8px rgba(12,68,124,0.08)', borderColor: COLORS.border }}
+              className="bg-white rounded-2xl border overflow-hidden"
+              style={{ borderColor: COLORS.border }}
             >
               <div className="flex px-3 py-2 border-b" style={{ backgroundColor: '#FAFAF8', borderColor: COLORS.border }}>
                 <span className="text-[10px] font-bold flex-[1.2]" style={{ color: COLORS.muted }}>
@@ -1989,15 +1778,7 @@ export default function App() {
           onLogout={handleLogout}
           onLangToggle={() => setLang(lang === 'KH' ? 'EN' : 'KH')}
           onProfileUpdated={(p) => setProfile(p)}
-          onOpenSubscription={() => setShowSubscription(true)}
         />
-      )}
-
-      {/* ============================================
-         REPORT
-         ============================================ */}
-      {currentScreen === 'Report' && profile && (
-        <ReportScreen lang={lang} profile={profile} onBack={() => setCurrentScreen('Home')} />
       )}
 
       {showSubscription && (
