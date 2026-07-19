@@ -1801,15 +1801,6 @@ export default function App() {
                 {lang === 'KH' ? 'តាមដានលំហូរសាច់ប្រាក់អាជីវកម្មរបស់អ្នក' : 'Track your business cash flow'}
               </p>
             </div>
-           {/* ប៊ូតុង បន្ថែមចំណូល/ចំណាយ ថ្មីនៅជិតប៊ូតុង Report */}
-<button
-  onClick={() => setIsAddOpen(!isAddOpen)}
-  className="flex items-center justify-center font-bold text-white text-lg"
-  style={{
-    width: 44,
-    height: 44,
-    borderRadius: 12,
-    backgroundColor: COLORS.gold,
   }}
 >
   <Plus size={INLINE} color="#FFFFFF" strokeWidth={2.5} />
