@@ -1465,13 +1465,9 @@ export default function App() {
                 </div>
               </div>
           </div
-          
             {/* Monthly statistics — bar chart */}
-            </div
-              {isAddOpen && (
-                        className="p-4 rounded-2xl mt-5"
+            </divclassName="p-4 rounded-2xl mt-5"
               style={{ backgroundColor: '#FFFFFF', boxShadow: '0 2px 8px rgba(12,68,124,0.08)' }}
-            >
               <div className="flex items-center gap-2 mb-3.5">
                 <BarChart3 size={16} style={{ color: COLORS.navy }} />
                 <p className="text-sm font-bold" style={{ color: COLORS.navy }}>
