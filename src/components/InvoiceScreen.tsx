@@ -58,6 +58,7 @@ interface Profile {
   username: string | null;
   phone: string | null;
   qr_code_url: string | null;
+  avatar_url: string | null;
 }
 
 interface Props {
@@ -89,6 +90,7 @@ export default function InvoiceScreen({ lang, profile, onBack, editInvoiceId }: 
   const [dueDate, setDueDate] = useState('');
   const [currency, setCurrency] = useState<'USD' | 'KHR'>('USD');
   const [notes, setNotes] = useState('');
+  const [discount, setDiscount] = useState('');
   const [invoiceNumber, setInvoiceNumber] = useState<number | null>(null);
   const [saveBusy, setSaveBusy] = useState(false);
   const [saveError, setSaveError] = useState('');
@@ -232,6 +234,7 @@ export default function InvoiceScreen({ lang, profile, onBack, editInvoiceId }: 
       setDueDate(inv.due_date || '');
       setCurrency(inv.currency || 'USD');
       setNotes(inv.notes || '');
+      setDiscount(inv.discount ? String(inv.discount) : '');
 
       const { data: itemRows } = await supabase
         .from('invoice_items')
@@ -267,8 +270,10 @@ export default function InvoiceScreen({ lang, profile, onBack, editInvoiceId }: 
     [items]
   );
 
+  const discountAmount = parseFloat(discount) || 0;
   const paid = payments.reduce((sum, p) => sum + Number(p.amount), 0);
-  const balance = subtotal - paid;
+  const total = subtotal - discountAmount;
+  const balance = total - paid;
 
   const addItem = () =>
     setItems([
@@ -310,6 +315,7 @@ export default function InvoiceScreen({ lang, profile, onBack, editInvoiceId }: 
       invoice_date: invoiceDate,
       due_date: dueDate || null,
       subtotal,
+      discount: discountAmount,
       currency,
       notes: notes.trim() || null,
     };
@@ -469,7 +475,7 @@ export default function InvoiceScreen({ lang, profile, onBack, editInvoiceId }: 
     borderColor: COLORS.border,
     backgroundColor: '#FAFAF8',
     color: COLORS.navy,
-    ...latinFont,
+    ...khmerFont,
   };
 
   /* ============================================
@@ -478,24 +484,36 @@ export default function InvoiceScreen({ lang, profile, onBack, editInvoiceId }: 
   const PreviewContent = () => (
     <div
       ref={previewRef}
-      className="bg-white rounded-2xl p-5"
+      className="bg-white rounded-2xl overflow-hidden"
       style={{ boxShadow: '0 2px 8px rgba(24,41,62,0.06)' }}
     >
-      {/* Header */}
-      <div className="flex justify-between items-start mb-4">
-        <div>
-          <div className="flex items-center gap-2 mb-1">
+      {/* Banner header */}
+      <div
+        className="px-5 pt-5 pb-4 flex justify-between items-start"
+        style={{ background: `linear-gradient(135deg, ${COLORS.navyTint}, #FFFFFF)` }}
+      >
+        <div className="flex items-center gap-2.5">
+          {profile.avatar_url ? (
+            <div
+              className="rounded-full overflow-hidden flex-shrink-0 border-2"
+              style={{ width: 44, height: 44, borderColor: '#FFFFFF' }}
+            >
+              <img src={profile.avatar_url} alt="" className="w-full h-full object-cover" crossOrigin="anonymous" />
+            </div>
+          ) : (
             <IconBadge icon={TrendingUp} size={INLINE} tint="invoice" shape="rounded" />
-            <span className="text-lg font-extrabold" style={{ color: COLORS.navy, ...latinFont }}>
+          )}
+          <div>
+            <p className="text-base font-extrabold leading-tight" style={{ color: COLORS.navy }}>
               {profile.business_name || 'KH Invoice'}
-            </span>
+            </p>
+            <p className="text-xs" style={{ color: COLORS.muted, ...latinFont }}>
+              {profile.phone || ''}
+            </p>
           </div>
-          <p className="text-xs" style={{ color: COLORS.muted }}>
-            {profile.phone || ''}
-          </p>
         </div>
         <div className="text-right">
-          <p className="text-xs font-semibold" style={{ color: COLORS.muted }}>
+          <p className="text-xs font-semibold" style={{ color: COLORS.gold }}>
             {tr('វិក្កយបត្រ', 'INVOICE')}
           </p>
           <p className="text-sm font-bold" style={{ color: COLORS.navy, ...latinFont }}>
@@ -506,6 +524,8 @@ export default function InvoiceScreen({ lang, profile, onBack, editInvoiceId }: 
           </p>
         </div>
       </div>
+
+      <div className="p-5 pt-4">
 
       {/* Customer */}
       <div className="mb-4 pb-3 border-b" style={{ borderColor: COLORS.border }}>
@@ -575,6 +595,14 @@ export default function InvoiceScreen({ lang, profile, onBack, editInvoiceId }: 
               {fmtMoney(subtotal, currency)}
             </span>
           </div>
+          {discountAmount > 0 && (
+            <div className="flex justify-between text-xs">
+              <span style={{ color: COLORS.muted }}>{tr('បញ្ចុះតម្លៃ', 'Discount')}</span>
+              <span className="font-bold" style={{ color: COLORS.danger }}>
+                -{fmtMoney(discountAmount, currency)}
+              </span>
+            </div>
+          )}
           <div className="flex justify-between text-xs">
             <span style={{ color: COLORS.muted }}>{tr('បានបង់', 'Paid')}</span>
             <span className="font-bold" style={{ color: COLORS.success }}>
@@ -895,15 +923,16 @@ export default function InvoiceScreen({ lang, profile, onBack, editInvoiceId }: 
 
         <div>
           <label className="text-xs font-semibold block mb-1" style={{ color: COLORS.navy }}>
-            {tr('ចំណាំ', 'Notes')}
+            {tr('បញ្ចុះតម្លៃ', 'Discount')} ({currency})
           </label>
-          <textarea
-            value={notes}
-            onChange={(e) => setNotes(e.target.value)}
-            rows={2}
-            placeholder={tr('ចំណាំផ្ទាល់ខ្លួន...', 'Additional notes...')}
-            className="w-full rounded-lg border px-3 py-2 text-sm outline-none resize-none"
-            style={{ ...inputStyle, ...khmerFont }}
+          <input
+            type="number"
+            inputMode="decimal"
+            value={discount}
+            onChange={(e) => setDiscount(e.target.value)}
+            placeholder="0.00"
+            className="w-full rounded-lg border px-3 py-2.5 text-sm outline-none"
+            style={inputStyle}
           />
         </div>
       </div>
