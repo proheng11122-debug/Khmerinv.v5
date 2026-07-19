@@ -1464,12 +1464,12 @@ export default function App() {
                   </div>
                 </div>
               </div>
-            </div>
-           
+          </div
+          
             {/* Monthly statistics — bar chart */}
-            <div
-           {isAddOpen && (
-              className="p-4 rounded-2xl mt-5"
+            </div
+              {isAddOpen && (
+                        className="p-4 rounded-2xl mt-5"
               style={{ backgroundColor: '#FFFFFF', boxShadow: '0 2px 8px rgba(12,68,124,0.08)' }}
             >
               <div className="flex items-center gap-2 mb-3.5">
@@ -1478,7 +1478,6 @@ export default function App() {
                   {lang === 'KH' ? `ស្ថិតិសរុប — ${monthLabel}` : `Monthly Statistics — ${monthLabel}`}
                 </p>
               </div>
-
               {/* Income vs Expense bar chart */}
               {(() => {
                 const maxVal = Math.max(monthTotals.incomeUSD, monthTotals.expenseUSD, 1);
