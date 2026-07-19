@@ -1769,7 +1769,7 @@ export default function App() {
             </div>
           )}
 
-      
+  
           <TabBar />
         </div>
       )}
