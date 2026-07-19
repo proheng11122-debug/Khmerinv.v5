@@ -1800,11 +1800,34 @@ export default function App() {
               <p className="text-white/70 text-xs">
                 {lang === 'KH' ? 'តាមដានលំហូរសាច់ប្រាក់អាជីវកម្មរបស់អ្នក' : 'Track your business cash flow'}
               </p>
-            </div>
-  }}
->
-  <Plus size={INLINE} color="#FFFFFF" strokeWidth={2.5} />
-</button>
+       <button
+        onClick={() => setIsAddOpen(!isAddOpen)}
+        className="flex items-center justify-center font-bold text-white text-lg"
+        style={{
+          width: 44,
+          height: 44,
+          borderRadius: 12,
+          backgroundColor: COLORS.gold,
+        }}
+      >
+        <Plus size={INLINE} color="#FFFFFF" strokeWidth={2.5} />
+      </button>
+
+      <button
+        onClick={() => setCurrentScreen('Report')}
+        className="flex items-center justify-center"
+        style={{
+          width: 44,
+          height: 44,
+          borderRadius: 12,
+          backgroundColor: 'rgba(255,255,255,0.18)',
+        }}
+      >
+        <BarChart3 size={INLINE} color="#FFFFFF" strokeWidth={2} />
+      </button>
+    </div>
+
+    <div className="flex-1 overflow-y-auto p-3.5 pb-24 -mt-4">
 
 <button
   onClick={() => setCurrentScreen('Report')}
