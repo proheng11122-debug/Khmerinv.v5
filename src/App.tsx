@@ -1466,7 +1466,6 @@ export default function App() {
               </div>
             </div>
             {isAddOpen && (
-
             {/* Monthly statistics — bar chart */}
             <div
               className="p-4 rounded-2xl mt-5"
