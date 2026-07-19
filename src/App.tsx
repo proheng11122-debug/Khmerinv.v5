@@ -1463,17 +1463,72 @@ export default function App() {
                     </p>
                   </div>
                 </div>
+            </div>
+          {/* ផ្ទាំងបំពេញទិន្នន័យ (បង្ហាញនៅក្រោម Balance Card) */}
+          {isAddOpen && (
+            <div className="w-full bg-white rounded-2xl p-4 mb-4 border" style={{ borderColor: COLORS.border }}>
+              <div className="flex rounded-lg border p-1 mb-4" style={{ borderColor: COLORS.border, backgroundColor: '#FAFAF8' }}>
+                <button
+                  onClick={() => setAddType('income')}
+                  className="flex-1 py-2 rounded-md text-sm font-bold flex items-center justify-center gap-1.5"
+                  style={{
+                    backgroundColor: addType === 'income' ? COLORS.success : 'transparent',
+                    color: addType === 'income' ? '#FFFFFF' : COLORS.muted,
+                  }}
+                >
+                  <TrendingUp size={20} color={addType === 'income' ? '#FFFFFF' : COLORS.muted} strokeWidth={2} />
+                  {lang === 'KH' ? 'ចំណូល' : 'Income'}
+                </button>
+                <button
+                  onClick={() => setAddType('expense')}
+                  className="flex-1 py-2 rounded-md text-sm font-bold flex items-center justify-center gap-1.5"
+                  style={{
+                    backgroundColor: addType === 'expense' ? COLORS.danger : 'transparent',
+                    color: addType === 'expense' ? '#FFFFFF' : COLORS.muted,
+                  }}
+                >
+                  <TrendingDown size={20} color={addType === 'expense' ? '#FFFFFF' : COLORS.muted} strokeWidth={2} />
+                  {lang === 'KH' ? 'ចំណាយ' : 'Expense'}
+                </button>
               </div>
-          </div
-            {/* Monthly statistics — bar chart */}
-            </divclassName="p-4 rounded-2xl mt-5"
-              style={{ backgroundColor: '#FFFFFF', boxShadow: '0 2px 8px rgba(12,68,124,0.08)' }}
-              <div className="flex items-center gap-2 mb-3.5">
-                <BarChart3 size={16} style={{ color: COLORS.navy }} />
-                <p className="text-sm font-bold" style={{ color: COLORS.navy }}>
-                  {lang === 'KH' ? `ស្ថិតិសរុប — ${monthLabel}` : `Monthly Statistics — ${monthLabel}`}
-                </p>
+
+              <label className="text-xs font-semibold block mb-1.5" style={{ color: COLORS.navy }}>{lang === 'KH' ? 'ថ្ងៃទី' : 'Date'}</label>
+              <input type="date" value={addDate} onChange={(e) => setAddDate(e.target.value)} className="w-full rounded-lg border px-3 py-2 text-sm outline-none mb-3" style={{ borderColor: COLORS.border, backgroundColor: '#FAFAF8', color: COLORS.navy }} />
+
+              <label className="text-xs font-semibold block mb-1.5" style={{ color: COLORS.navy }}>Description</label>
+              <input value={addDescription} onChange={(e) => setAddDescription(e.target.value)} placeholder={lang === 'KH' ? 'ឧ. លក់កាហ្វេទឹកកក' : 'e.g. Iced coffee sales'} className="w-full rounded-lg border px-3 py-2 text-sm outline-none mb-3" style={{ borderColor: COLORS.border, backgroundColor: '#FAFAF8', color: COLORS.navy }} />
+
+              <div className="flex gap-2 mb-3">
+                <div className="flex-1">
+                  <label className="text-xs font-semibold block mb-1.5" style={{ color: COLORS.navy }}>{lang === 'KH' ? 'ចំនួន' : 'Quantity'}</label>
+                  <div className="flex gap-2">
+                    <input type="number" value={addQuantity} onChange={(e) => setAddQuantity(e.target.value)} className="w-20 rounded-lg border px-3 py-2 text-sm outline-none" style={{ borderColor: COLORS.border, backgroundColor: '#FAFAF8', color: COLORS.navy, ...latinFont }} />
+                    <select value={addUnit} onChange={(e) => setAddUnit(e.target.value)} className="flex-1 rounded-lg border px-2 py-2 text-sm outline-none" style={{ borderColor: COLORS.border, backgroundColor: '#FAFAF8', color: COLORS.navy }}>
+                      {DEFAULT_UNITS.map((u) => <option key={u} value={u}>{u}</option>)}
+                    </select>
+                  </div>
+                </div>
               </div>
+
+              <label className="text-xs font-semibold block mb-1.5" style={{ color: COLORS.navy }}>{lang === 'KH' ? 'តម្លៃ (មួយឯកតា)' : 'Price (per unit)'}</label>
+              <div className="flex gap-2 mb-3">
+                <input type="number" value={addUnitPrice} onChange={(e) => setAddUnitPrice(e.target.value)} placeholder="0.00" className="flex-1 rounded-lg border px-3 py-2 text-sm outline-none" style={{ borderColor: COLORS.border, backgroundColor: '#FAFAF8', color: COLORS.navy, ...latinFont }} />
+                <button onClick={() => setAddCurrency('USD')} className="px-3 rounded-lg border text-sm font-bold" style={{ borderColor: COLORS.border, backgroundColor: addCurrency === 'USD' ? COLORS.gold : '#FAFAF8', color: addCurrency === 'USD' ? '#FFFFFF' : COLORS.navy }}>USD</button>
+                <button onClick={() => setAddCurrency('KHR')} className="px-3 rounded-lg border text-sm font-bold" style={{ borderColor: COLORS.border, backgroundColor: addCurrency === 'KHR' ? COLORS.gold : '#FAFAF8', color: addCurrency === 'KHR' ? '#FFFFFF' : COLORS.navy }}>KHR</button>
+              </div>
+
+              <div className="flex gap-2 mt-4">
+                <button onClick={() => setIsAddOpen(false)} className="flex-1 py-2.5 rounded-lg font-bold text-sm border" style={{ borderColor: COLORS.border, color: COLORS.navy }}>{lang === 'KH' ? 'បិទ' : 'Close'}</button>
+                <button onClick={handleAddTransaction} disabled={addBusy} className="flex-1 py-2.5 rounded-lg font-bold text-white text-sm" style={{ backgroundColor: addType === 'income' ? COLORS.success : COLORS.danger }}>{addBusy ? '...' : (lang === 'KH' ? 'រក្សាទុក' : 'Save')}</button>
+              </div>
+            </div>
+          )}
+
+          {/* Monthly statistics - bar chart */}
+          <div
+            className="p-4 rounded-2xl mt-5"
+            style={{ backgroundColor: '#FFFFFF', boxShadow: '0 2px 8px rgba(12,68,124,0.08)' }}
+          >
               {/* Income vs Expense bar chart */}
               {(() => {
                 const maxVal = Math.max(monthTotals.incomeUSD, monthTotals.expenseUSD, 1);
