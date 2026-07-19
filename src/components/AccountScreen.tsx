@@ -12,6 +12,8 @@ import {
   Lock,
   CheckCircle2,
   Building2,
+  CreditCard,
+  ChevronRight,
 } from 'lucide-react';
 import { supabase } from '../lib/supabaseClient';
 import { IconBadge } from './IconBadge';
@@ -26,6 +28,7 @@ interface Profile {
   is_locked: boolean | null;
   trial_started_at: string | null;
   qr_code_url: string | null;
+  avatar_url: string | null;
 }
 
 interface Props {
@@ -35,6 +38,7 @@ interface Props {
   onLogout: () => void;
   onLangToggle: () => void;
   onProfileUpdated: (p: Profile) => void;
+  onOpenSubscription: () => void;
 }
 
 const inputStyle: CSSProperties = { borderColor: COLORS.border, backgroundColor: '#FFFFFF', color: COLORS.navy };
@@ -48,9 +52,10 @@ function getTrialDaysRemaining(trialStartedAt: string | null): number {
   return Math.max(0, TRIAL_DAYS - elapsedDays);
 }
 
-export default function AccountScreen({ lang, profile, onBack, onLogout, onLangToggle, onProfileUpdated }: Props) {
+export default function AccountScreen({ lang, profile, onBack, onLogout, onLangToggle, onProfileUpdated, onOpenSubscription }: Props) {
   const tr = (kh: string, en: string) => (lang === 'KH' ? kh : en);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const avatarInputRef = useRef<HTMLInputElement>(null);
 
   const [bizName, setBizName] = useState(profile.business_name || '');
   const [username, setUsername] = useState(profile.username || '');
@@ -61,6 +66,9 @@ export default function AccountScreen({ lang, profile, onBack, onLogout, onLangT
   const [uploadingQr, setUploadingQr] = useState(false);
   const [qrError, setQrError] = useState('');
 
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
+  const [avatarError, setAvatarError] = useState('');
+
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [pwBusy, setPwBusy] = useState(false);
@@ -68,6 +76,36 @@ export default function AccountScreen({ lang, profile, onBack, onLogout, onLangT
   const [pwSaved, setPwSaved] = useState(false);
 
   const trialDaysRemaining = getTrialDaysRemaining(profile.trial_started_at);
+
+  const handleAvatarUpload = async (file: File) => {
+    setAvatarError('');
+    setUploadingAvatar(true);
+    const ext = file.name.split('.').pop() || 'png';
+    const path = `${profile.id}/avatar.${ext}`;
+    const { error: uploadError } = await supabase.storage
+      .from('qr-codes')
+      .upload(path, file, { upsert: true });
+    if (uploadError) {
+      setUploadingAvatar(false);
+      setAvatarError(uploadError.message);
+      return;
+    }
+    const { data: publicUrlData } = supabase.storage.from('qr-codes').getPublicUrl(path);
+    const url = `${publicUrlData.publicUrl}?t=${Date.now()}`;
+    const { data, error } = await supabase
+      .from('profiles')
+      .update({ avatar_url: url })
+      .eq('id', profile.id)
+      .select()
+      .maybeSingle();
+    setUploadingAvatar(false);
+    if (error) {
+      setAvatarError(error.message);
+      return;
+    }
+    if (data) onProfileUpdated(data as Profile);
+  };
+
 
   const handleSaveProfile = async () => {
     setProfileError('');
@@ -169,6 +207,58 @@ export default function AccountScreen({ lang, profile, onBack, onLogout, onLangT
       </div>
 
       <div className="flex-1 overflow-y-auto p-3.5 pb-24 -mt-2 space-y-3.5">
+        {/* Profile photo */}
+        <div className="bg-white rounded-2xl p-4" style={{ boxShadow: '0 1px 3px rgba(12,68,124,0.08), 0 4px 12px rgba(12,68,124,0.06)', borderLeft: `4px solid ${COLORS.account}` }}>
+          <div className="flex items-center gap-2 mb-3">
+            <IconBadge icon={User} size={INLINE} tint="account" shape="rounded" />
+            <p className="text-xs font-bold" style={{ color: COLORS.muted }}>
+              {tr('រូបភាពប្រូហ្វាល់', 'Profile Photo')}
+            </p>
+          </div>
+          <div className="flex items-center gap-3">
+            <div
+              className="w-20 h-20 rounded-full border flex items-center justify-center overflow-hidden flex-shrink-0"
+              style={{ borderColor: COLORS.border, backgroundColor: COLORS.bgApp }}
+            >
+              {profile.avatar_url ? (
+                <img src={profile.avatar_url} alt="" className="w-full h-full object-cover" />
+              ) : (
+                <User size={28} color={COLORS.muted} strokeWidth={1.5} />
+              )}
+            </div>
+            <div className="flex-1">
+              <input
+                ref={avatarInputRef}
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (file) handleAvatarUpload(file);
+                }}
+              />
+              <button
+                onClick={() => avatarInputRef.current?.click()}
+                disabled={uploadingAvatar}
+                className="flex items-center justify-center gap-1.5 w-full py-2.5 rounded-lg border font-bold text-xs disabled:opacity-60"
+                style={{ borderColor: COLORS.border, color: COLORS.navy }}
+              >
+                <Upload size={14} color={COLORS.navy} strokeWidth={2} />
+                {uploadingAvatar
+                  ? tr('កំពុងផ្ទុកឡើង...', 'Uploading...')
+                  : profile.avatar_url
+                  ? tr('ប្តូររូបភាព', 'Change Photo')
+                  : tr('ផ្ទុករូបភាពឡើង', 'Upload Photo')}
+              </button>
+              {avatarError && (
+                <p className="text-[11px] mt-1.5" style={{ color: COLORS.danger }}>
+                  {avatarError}
+                </p>
+              )}
+            </div>
+          </div>
+        </div>
+
         {/* Trial status */}
         <div
           className="p-4 rounded-2xl flex items-center gap-3"
@@ -186,6 +276,28 @@ export default function AccountScreen({ lang, profile, onBack, onLogout, onLangT
             </p>
           </div>
         </div>
+
+        {/* Subscription */}
+        <button
+          onClick={onOpenSubscription}
+          className="w-full bg-white rounded-2xl p-4 flex items-center justify-between"
+          style={{ boxShadow: '0 1px 3px rgba(12,68,124,0.08), 0 4px 12px rgba(12,68,124,0.06)', borderLeft: `4px solid ${COLORS.account}` }}
+        >
+          <div className="flex items-center gap-2">
+            <IconBadge icon={CreditCard} size={INLINE} tint="account" shape="rounded" />
+            <div className="text-left">
+              <p className="text-xs font-bold" style={{ color: COLORS.navy }}>
+                {tr('គម្រោងសមាជិកភាព', 'Subscription')}
+              </p>
+              <p className="text-[11px]" style={{ color: COLORS.muted }}>
+                {trialDaysRemaining > 0
+                  ? tr('មើល និងដំឡើងគម្រោង', 'View and upgrade your plan')
+                  : tr('សូមជាវដើម្បីបន្តប្រើប្រាស់', 'Subscribe to keep using the app')}
+              </p>
+            </div>
+          </div>
+          <ChevronRight size={18} color={COLORS.muted} strokeWidth={2} />
+        </button>
 
         {/* Business profile */}
         <div className="bg-white rounded-2xl p-4" style={{ boxShadow: '0 1px 3px rgba(12,68,124,0.08), 0 4px 12px rgba(12,68,124,0.06)', borderLeft: `4px solid ${COLORS.account}` }}>
