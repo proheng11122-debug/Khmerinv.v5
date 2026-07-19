@@ -9,7 +9,6 @@ import {
   Share2,
   Pencil,
   Eye,
-  Upload,
   Hash,
   User,
   Package,
@@ -18,7 +17,7 @@ import {
 } from 'lucide-react';
 import { supabase } from '../lib/supabaseClient';
 import { IconBadge } from './IconBadge';
-import { COLORS, khmerFont, INLINE, ACTION, DEFAULT_UNITS } from '../lib/theme';
+import { COLORS, khmerFont, INLINE, DEFAULT_UNITS } from '../lib/theme';
 
 type Tab = 'edit' | 'preview';
 
@@ -49,10 +48,13 @@ interface Props {
 let itemIdCounter = 0;
 const genItemId = () => `item-${++itemIdCounter}`;
 
+// កែសម្រួលមុខងារបង្ហាញនិមិត្តសញ្ញារូបិយប័ណ្ណនៅពីមុខលេខទិន្នន័យឱ្យត្រឹមត្រូវ
 function fmtMoney(n: number, currency: string) {
-  if (currency === 'USD')
-    return `$${n.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-  return `${n.toLocaleString()} ៛`;
+  const formattedNumber = n.toLocaleString(undefined, { 
+    minimumFractionDigits: currency === 'USD' ? 2 : 0, 
+    maximumFractionDigits: currency === 'USD' ? 2 : 0 
+  });
+  return currency === 'USD' ? `$${formattedNumber}` : `៛${formattedNumber}`;
 }
 
 export default function InvoiceScreen({ lang, profile, onBack, editInvoiceId }: Props) {
@@ -68,7 +70,7 @@ export default function InvoiceScreen({ lang, profile, onBack, editInvoiceId }: 
   const [currency, setCurrency] = useState<'USD' | 'KHR'>('USD');
   const [discount, setDiscount] = useState('0');
   
-  // Advanced Paid States
+  // Advanced Paid States សម្រាប់ការកែថ្ងៃទី និងការកត់ចំណាំទូទាត់ប្រាក់
   const [paidInput, setPaidInput] = useState('0'); 
   const [paymentDate, setPaymentDate] = useState(() => new Date().toISOString().slice(0, 10));
   const [paymentNote, setPaymentNote] = useState('');
@@ -475,7 +477,7 @@ export default function InvoiceScreen({ lang, profile, onBack, editInvoiceId }: 
                 </div>
               </div>
 
-              {/* Advanced Payments Reporting */}
+              {/* Advanced Payments Reporting Box */}
               {parseFloat(paidInput) > 0 && (
                 <div className="pt-2 mt-2 border-t border-gray-100 space-y-2">
                   <div>
@@ -556,60 +558,61 @@ export default function InvoiceScreen({ lang, profile, onBack, editInvoiceId }: 
           </div>
         ) : (
           /* =========================================================
-             INVOICE PREVIEW MODE (Geometric Elegant Style Template)
+             INVOICE PREVIEW MODE (Compact & Corporate Design Style)
              ========================================================= */
-          <div ref={previewRef} className="bg-white rounded-2xl overflow-hidden border" style={{ boxShadow: '0 4px 25px rgba(24,41,62,0.06)', borderColor: COLORS.border }}>
+          <div ref={previewRef} className="bg-white rounded-2xl overflow-hidden border" style={{ boxShadow: '0 4px 20px rgba(24,41,62,0.05)', borderColor: COLORS.border }}>
             
-            {/* Custom Geometric Header Design - Inspired by the template style */}
-            <div className="relative pt-8 pb-14 px-6 text-white overflow-hidden" style={{ background: '#0F2942' }}>
-              {/* Geometric Diagonal Decoration Shape Lines */}
-              <div className="absolute bottom-0 right-0 left-0 h-8 bg-[#1D4ED8] transform skew-y-3 origin-bottom-right scale-110"></div>
-              <div className="absolute bottom-0 right-0 left-0 h-6 bg-[#F59E0B] transform -skew-y-2 origin-bottom-left scale-110 opacity-90"></div>
+            {/* ទីនេះជា Banner កែសម្រួលឱ្យតូចបង្រួមជាងមុន និងប្តូរពណ៌ឱ្យស៊ីគ្នានឹងគំរូ App */}
+            <div className="relative pt-5 pb-9 px-5 text-white overflow-hidden" style={{ backgroundColor: '#1E3A8A' }}>
+              {/* Geometric Background Strip */}
+              <div className="absolute bottom-0 right-0 left-0 h-4 bg-[#F59E0B] transform -skew-y-1 origin-bottom-left scale-110"></div>
               
-              <div className="relative z-10 flex justify-between items-start">
-                <div>
-                  <div className="w-12 h-12 rounded-xl bg-white shadow-md flex items-center justify-center text-[#0F2942] text-xl font-black mb-2">
+              <div className="relative z-10 flex justify-between items-center">
+                <div className="flex items-center gap-3">
+                  {/* រង្វង់ Logo កែពណ៌ផ្ទៃ និងអក្សរឱ្យស៊ីគ្នានឹង Banner ស្អាត */}
+                  <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center text-[#1E3A8A] text-lg font-black shadow-sm border border-blue-100">
                     {profile.business_name ? profile.business_name.charAt(0).toUpperCase() : 'B'}
                   </div>
-                  <h2 className="text-lg font-black tracking-wide uppercase">
-                    {profile.business_name || 'Business Name'}
-                  </h2>
-                  <p className="text-xs opacity-80 font-medium mt-0.5">{profile.phone || '012 345 678'}</p>
+                  <div>
+                    <h2 className="text-sm font-black tracking-wide uppercase leading-tight">
+                      {profile.business_name || 'Business Name'}
+                    </h2>
+                    <p className="text-[10px] opacity-90 font-bold mt-0.5">{profile.phone || '012 345 678'}</p>
+                  </div>
                 </div>
 
                 <div className="text-right">
-                  <h1 className="text-xl font-black tracking-widest text-[#F59E0B] uppercase">{tr('វិក្កយបត្រ', 'INVOICE')}</h1>
-                  <p className="text-xs font-bold mt-1 bg-white/20 px-2 py-0.5 rounded inline-block">
+                  <h1 className="text-base font-black tracking-wider text-[#F59E0B] uppercase">{tr('វិក្កយបត្រ', 'INVOICE')}</h1>
+                  <p className="text-[10px] font-bold mt-0.5 bg-white/20 px-2 py-0.5 rounded inline-block">
                     #{invoiceNumber ? String(invoiceNumber).padStart(6, '0') : '------'}
                   </p>
                 </div>
               </div>
             </div>
 
-            {/* Content Details Block */}
-            <div className="p-5 relative z-20 bg-white rounded-t-xl -mt-4">
-              {/* Customer and Dates details */}
-              <div className="grid grid-cols-2 gap-4 mb-6 pb-4 border-b border-gray-100">
+            {/* Content Body Details */}
+            <div className="p-4 relative z-20 bg-white rounded-t-xl -mt-2">
+              <div className="grid grid-cols-2 gap-4 mb-4 pb-3 border-b border-gray-100">
                 <div>
-                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-wider mb-1">{tr('អតិថិជន', 'BILL TO')}</p>
-                  <p className="text-sm font-black text-slate-800">{customerName || '---'}</p>
-                  {customerPhone && <p className="text-xs text-slate-500 font-medium mt-0.5">{customerPhone}</p>}
+                  <p className="text-[9px] font-black text-slate-400 uppercase tracking-wider mb-0.5">{tr('អតិថិជន', 'BILL TO')}</p>
+                  <p className="text-xs font-black text-slate-800">{customerName || '---'}</p>
+                  {customerPhone && <p className="text-[10px] text-slate-500 font-medium mt-0.5">{customerPhone}</p>}
                 </div>
                 <div className="text-right">
-                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-wider mb-1">{tr('កាលបរិច្ឆេទ', 'DATES')}</p>
-                  <p className="text-xs text-slate-700 font-semibold">{tr('ថ្ងៃចេញ៖ ', 'Issued: ')}{invoiceDate}</p>
-                  {dueDate && <p className="text-xs text-red-500 font-bold mt-0.5">{tr('ផុតកំណត់៖ ', 'Due: ')}{dueDate}</p>}
+                  <p className="text-[9px] font-black text-slate-400 uppercase tracking-wider mb-0.5">{tr('កាលបរិច្ឆេទ', 'DATES')}</p>
+                  <p className="text-[10px] text-slate-700 font-semibold">{tr('ថ្ងៃចេញ៖ ', 'Issued: ')}{invoiceDate}</p>
+                  {dueDate && <p className="text-[10px] text-red-500 font-bold mt-0.5">{tr('ផុតកំណត់៖ ', 'Due: ')}{dueDate}</p>}
                 </div>
               </div>
 
-              {/* Items List Table with Dark Contrast Accent Header */}
-              <table className="w-full mb-6">
+              {/* តារាងទំនិញដែលបានកែសម្រួលនិមិត្តសញ្ញាលុយឱ្យរត់ត្រឹមត្រូវ */}
+              <table className="w-full mb-4">
                 <thead>
-                  <tr className="bg-[#0F2942] text-white">
-                    <th className="text-xs font-bold px-3 py-2 text-left rounded-l">{tr('ការពិពណ៌នា', 'Description')}</th>
-                    <th className="text-xs font-bold py-2 text-center">{tr('ចំនួន', 'Qty')}</th>
-                    <th className="text-xs font-bold py-2 text-right">{tr('តម្លៃរាយ', 'Price')}</th>
-                    <th className="text-xs font-bold px-3 py-2 text-right rounded-r">{tr('សរុប', 'Total')}</th>
+                  <tr className="bg-[#1E3A8A] text-white">
+                    <th className="text-[11px] font-bold px-2 py-1.5 text-left rounded-l">{tr('ការពិពណ៌នា', 'Description')}</th>
+                    <th className="text-[11px] font-bold py-1.5 text-center">{tr('ចំនួន', 'Qty')}</th>
+                    <th className="text-[11px] font-bold py-1.5 text-right">{tr('តម្លៃរាយ', 'Price')}</th>
+                    <th className="text-[11px] font-bold px-2 py-1.5 text-right rounded-r">{tr('សរុប', 'Total')}</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-100">
@@ -618,19 +621,19 @@ export default function InvoiceScreen({ lang, profile, onBack, editInvoiceId }: 
                     const price = parseFloat(item.unit_price) || 0;
                     return (
                       <tr key={item.id} className="hover:bg-slate-50/50">
-                        <td className="text-xs px-3 py-3 font-medium text-slate-800">{item.description}</td>
-                        <td className="text-xs py-3 text-center text-slate-600 font-semibold">{qty} {item.unit}</td>
-                        <td className="text-xs py-3 text-right text-slate-600 font-bold">{fmtMoney(price, currency)}</td>
-                        <td className="text-xs px-3 py-3 text-right font-black text-slate-900">{fmtMoney(qty * price, currency)}</td>
+                        <td className="text-xs px-2 py-2.5 font-medium text-slate-800">{item.description}</td>
+                        <td className="text-xs py-2.5 text-center text-slate-600 font-semibold">{qty} {item.unit}</td>
+                        <td className="text-xs py-2.5 text-right text-slate-600 font-bold">{fmtMoney(price, currency)}</td>
+                        <td className="text-xs px-2 py-2.5 text-right font-black text-slate-900">{fmtMoney(qty * price, currency)}</td>
                       </tr>
                     );
                   })}
                 </tbody>
               </table>
 
-              {/* Summary View Block */}
-              <div className="flex justify-end mb-6">
-                <div className="w-56 space-y-2 text-xs border border-gray-100 bg-slate-50/50 p-3 rounded-xl">
+              {/* Summary Total Calculations Block */}
+              <div className="flex justify-end mb-4">
+                <div className="w-48 space-y-1.5 text-[11px] border border-gray-100 bg-slate-50/50 p-2.5 rounded-xl">
                   <div className="flex justify-between text-slate-500 font-medium">
                     <span>{tr('សរុបរង', 'Subtotal')}</span>
                     <span className="font-bold text-slate-800">{fmtMoney(subtotal, currency)}</span>
@@ -642,18 +645,18 @@ export default function InvoiceScreen({ lang, profile, onBack, editInvoiceId }: 
                     </div>
                   )}
                   {paidVal > 0 && (
-                    <div className="space-y-0.5 border-b border-dashed pb-1.5 mb-1">
+                    <div className="space-y-0.5 border-b border-dashed pb-1 mb-1">
                       <div className="flex justify-between text-emerald-600 font-bold">
                         <span>{tr('បានបង់រួច', 'Paid Amount')}</span>
                         <span>{fmtMoney(paidVal, currency)}</span>
                       </div>
-                      <p className="text-[9px] text-slate-400 text-right font-medium">
+                      <p className="text-[8px] text-slate-400 text-right font-medium">
                         {paymentDate && `${tr('បង់ថ្ងៃទី៖ ', 'Paid on: ')} ${paymentDate}`}
                         {paymentNote && ` (${paymentNote})`}
                       </p>
                     </div>
                   )}
-                  <div className="flex justify-between text-sm pt-1 font-black">
+                  <div className="flex justify-between text-xs pt-0.5 font-black">
                     <span className="text-slate-900">{tr('នៅសល់', 'Balance Due')}</span>
                     <span className={balance > 0 ? 'text-red-600' : 'text-emerald-600'}>
                       {fmtMoney(balance, currency)}
@@ -662,11 +665,11 @@ export default function InvoiceScreen({ lang, profile, onBack, editInvoiceId }: 
                 </div>
               </div>
 
-              {/* Payment Transfer Section */}
+              {/* Scan QR Section */}
               {qrCodeUrl && (
-                <div className="pt-4 border-t border-gray-100 flex flex-col items-center justify-center bg-slate-50/80 rounded-xl p-3">
-                  <img src={qrCodeUrl} alt="Payment QR" className="w-26 h-26 rounded-lg bg-white p-1 border shadow-sm" crossOrigin="anonymous" />
-                  <p className="text-[9px] text-slate-500 font-black tracking-wider mt-2 uppercase">{tr('ស្កេន QR ដើម្បីទូទាត់ប្រាក់', 'SCAN QR CODE TO PAY')}</p>
+                <div className="pt-3 border-t border-gray-100 flex flex-col items-center justify-center bg-slate-50/80 rounded-xl p-2.5">
+                  <img src={qrCodeUrl} alt="Payment QR" className="w-24 h-24 rounded-lg bg-white p-1 border shadow-sm" crossOrigin="anonymous" />
+                  <p className="text-[8px] text-slate-500 font-black tracking-wider mt-1.5 uppercase">{tr('ស្កេន QR ដើម្បីទូទាត់ប្រាក់', 'SCAN QR CODE TO PAY')}</p>
                 </div>
               )}
             </div>
@@ -674,7 +677,7 @@ export default function InvoiceScreen({ lang, profile, onBack, editInvoiceId }: 
         )}
       </div>
 
-      {/* Popups modals handling */}
+      {/* Popups models sections */}
       {showQR && qrCodeUrl && (
         <div className="fixed inset-0 flex items-center justify-center z-50 bg-black/40 px-4" onClick={() => setShowQR(false)}>
           <div className="bg-white rounded-2xl p-5 max-w-xs w-full text-center" onClick={(e) => e.stopPropagation()}>
