@@ -21,6 +21,7 @@ import {
   LogOut,
   Languages,
   User as UserIcon,
+  BarChart3,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { supabase } from './lib/supabaseClient';
@@ -30,36 +31,11 @@ import SubscriptionModal from './components/SubscriptionModal';
 import InvoiceOverview from './components/InvoiceOverview';
 import StockScreen from './components/StockScreen';
 import AccountScreen from './components/AccountScreen';
+import { COLORS, khmerFont, latinFont, DEFAULT_UNITS } from './lib/theme';
 
 
 
-const COLORS = {
-  navy: '#0C447C',
-  navyGradientStart: '#0C447C',
-  navyGradientEnd: '#185FA5',
-  navyTint: '#E6F1FB',
-  gold: '#185FA5',
-  goldDark: '#124A7D',
-  goldTint: '#E6F1FB',
-  bgApp: '#F7FAFD',
-  border: '#E1E9F0',
-  success: '#1F9D6B',
-  successTint: '#E8F6F0',
-  danger: '#E5533D',
-  dangerTint: '#FDEDE9',
-  muted: '#6B7B8A',
-  stock: '#0F6E56',
-  stockTint: '#E1F5EE',
-  invoice: '#2E86C1',
-  invoiceTint: '#EAF3FB',
-  account: '#E0A93E',
-  accountTint: '#FBF1E0',
-};
 
-const khmerFont: CSSProperties = { fontFamily: "'Battambang', sans-serif" };
-const latinFont: CSSProperties = { fontFamily: "'Inter', sans-serif" };
-
-const DEFAULT_UNITS = ['ដុំ', 'កែវ', 'ដប', 'កញ្ចប់', 'គីឡូ', 'សេវា'];
 
 const TRIAL_DAYS = 30;
 
@@ -183,6 +159,7 @@ export default function App() {
   const [transactionsLoading, setTransactionsLoading] = useState(false);
   const [invoiceCount, setInvoiceCount] = useState<number | null>(null);
   const [productCount, setProductCount] = useState<number | null>(null);
+  const [topCustomers, setTopCustomers] = useState<{ name: string; total: number }[]>([]);
   const [showSubscription, setShowSubscription] = useState(false);
   const [customUnits, setCustomUnits] = useState<string[]>([]);
   const [isAddOpen, setIsAddOpen] = useState(false);
@@ -250,12 +227,38 @@ export default function App() {
   };
 
   const fetchHomeCounts = async () => {
+    const now = new Date();
+    const mStart = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-01`;
+    const mEnd = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(
+      new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate()
+    ).padStart(2, '0')}`;
     const [invRes, prodRes] = await Promise.all([
-      supabase.from('invoices').select('id', { count: 'exact', head: true }),
+      supabase
+        .from('invoices')
+        .select('id', { count: 'exact', head: true })
+        .gte('invoice_date', mStart)
+        .lte('invoice_date', mEnd),
       supabase.from('products').select('id', { count: 'exact', head: true }).eq('is_active', true),
     ]);
     if (!invRes.error) setInvoiceCount(invRes.count ?? 0);
     if (!prodRes.error) setProductCount(prodRes.count ?? 0);
+
+    const { data: custRows, error: custErr } = await supabase
+      .from('invoices')
+      .select('customer_name, subtotal, currency')
+      .eq('currency', 'USD');
+    if (!custErr && custRows) {
+      const totals: Record<string, number> = {};
+      custRows.forEach((row: { customer_name: string; subtotal: number }) => {
+        const name = row.customer_name?.trim() || (lang === 'KH' ? 'អតិថិជនទូទៅ' : 'General customer');
+        totals[name] = (totals[name] || 0) + Number(row.subtotal || 0);
+      });
+      const sorted = Object.entries(totals)
+        .map(([name, total]) => ({ name, total }))
+        .sort((a, b) => b.total - a.total)
+        .slice(0, 5);
+      setTopCustomers(sorted);
+    }
   };
 
   useEffect(() => {
@@ -337,6 +340,21 @@ export default function App() {
     () => computeTotals(transactions),
     [transactions]
   );
+
+  const now = new Date();
+  const monthStart = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-01`;
+  const monthEnd = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(
+    new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate()
+  ).padStart(2, '0')}`;
+  const monthTransactions = useMemo(
+    () => transactions.filter((t) => t.transaction_date >= monthStart && t.transaction_date <= monthEnd),
+    [transactions, monthStart, monthEnd]
+  );
+  const monthTotals = useMemo(() => computeTotals(monthTransactions), [monthTransactions]);
+  const monthLabel = now.toLocaleDateString(lang === 'KH' ? 'km-KH' : 'en-US', {
+    month: 'long',
+    year: 'numeric',
+  });
 
   const getRangeDates = () => {
     const today = new Date();
@@ -1339,107 +1357,141 @@ export default function App() {
               </p>
             </div>
 
-            {/* Income / Expense / Invoices / Stock — long summary rows */}
+            {/* Monthly statistics — bar chart */}
             <div
-              className="relative flex items-center gap-3 p-3.5 rounded-2xl overflow-hidden mt-2.5"
-              style={{
-                background: 'linear-gradient(135deg, #34C77B, #1F9D6B)',
-                boxShadow: '0 5px 12px rgba(31,157,107,0.25)',
-              }}
+              className="p-4 rounded-2xl mt-5"
+              style={{ backgroundColor: '#FFFFFF', boxShadow: '0 2px 8px rgba(12,68,124,0.08)' }}
             >
-              <TrendingUp
-                size={72}
-                className="absolute opacity-20"
-                style={{ color: '#fff', top: -16, right: -14 }}
-              />
-              <div
-                className="relative flex items-center justify-center rounded-xl flex-shrink-0"
-                style={{ width: 34, height: 34, background: 'rgba(255,255,255,0.22)' }}
-              >
-                <TrendingUp size={18} className="text-white" />
+              <div className="flex items-center gap-2 mb-3.5">
+                <BarChart3 size={16} style={{ color: COLORS.navy }} />
+                <p className="text-sm font-bold" style={{ color: COLORS.navy }}>
+                  {lang === 'KH' ? `ស្ថិតិសរុប — ${monthLabel}` : `Monthly Statistics — ${monthLabel}`}
+                </p>
               </div>
-              <div className="relative flex-1 min-w-0">
-                <p className="text-xs font-semibold text-white/85">{lang === 'KH' ? 'ចំណូលសរុប' : 'Income'}</p>
+
+              {/* Income vs Expense bar chart */}
+              {(() => {
+                const maxVal = Math.max(monthTotals.incomeUSD, monthTotals.expenseUSD, 1);
+                const incomePct = Math.min(100, (monthTotals.incomeUSD / maxVal) * 100);
+                const expensePct = Math.min(100, (monthTotals.expenseUSD / maxVal) * 100);
+                return (
+                  <div className="space-y-3">
+                    <div>
+                      <div className="flex justify-between items-center mb-1">
+                        <span className="text-xs font-semibold" style={{ color: COLORS.navy }}>
+                          {lang === 'KH' ? 'ចំណូលខែនេះ' : 'Income'}
+                        </span>
+                        <span className="text-xs font-bold" style={{ color: COLORS.success, ...latinFont }}>
+                          {formatMoney(monthTotals.incomeUSD, monthTotals.incomeKHR)}
+                        </span>
+                      </div>
+                      <div className="w-full h-2.5 rounded-full" style={{ backgroundColor: COLORS.successTint }}>
+                        <div
+                          className="h-2.5 rounded-full"
+                          style={{
+                            width: `${incomePct}%`,
+                            background: 'linear-gradient(90deg, #34C77B, #1F9D6B)',
+                          }}
+                        />
+                      </div>
+                    </div>
+                    <div>
+                      <div className="flex justify-between items-center mb-1">
+                        <span className="text-xs font-semibold" style={{ color: COLORS.navy }}>
+                          {lang === 'KH' ? 'ចំណាយខែនេះ' : 'Expense'}
+                        </span>
+                        <span className="text-xs font-bold" style={{ color: COLORS.danger, ...latinFont }}>
+                          {formatMoney(monthTotals.expenseUSD, monthTotals.expenseKHR)}
+                        </span>
+                      </div>
+                      <div className="w-full h-2.5 rounded-full" style={{ backgroundColor: COLORS.dangerTint }}>
+                        <div
+                          className="h-2.5 rounded-full"
+                          style={{
+                            width: `${expensePct}%`,
+                            background: 'linear-gradient(90deg, #F0785C, #E5533D)',
+                          }}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                );
+              })()}
+
+              {/* Invoices / Stock quick counts */}
+              <div className="flex gap-2.5 mt-4 pt-3.5" style={{ borderTop: `1px solid ${COLORS.border}` }}>
+                <div className="flex-1 flex items-center gap-2">
+                  <div
+                    className="flex items-center justify-center rounded-lg flex-shrink-0"
+                    style={{ width: 28, height: 28, backgroundColor: COLORS.invoiceTint }}
+                  >
+                    <Receipt size={14} style={{ color: COLORS.invoice }} />
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-[10px]" style={{ color: COLORS.muted }}>
+                      {lang === 'KH' ? 'វិក្កយបត្រខែនេះ' : 'Invoices'}
+                    </p>
+                    <p className="text-sm font-bold" style={{ color: COLORS.navy }}>
+                      {invoiceCount === null ? '...' : invoiceCount}
+                    </p>
+                  </div>
+                </div>
+                <div className="flex-1 flex items-center gap-2">
+                  <div
+                    className="flex items-center justify-center rounded-lg flex-shrink-0"
+                    style={{ width: 28, height: 28, backgroundColor: COLORS.stockTint }}
+                  >
+                    <Package size={14} style={{ color: COLORS.stock }} />
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-[10px]" style={{ color: COLORS.muted }}>
+                      {lang === 'KH' ? 'ស្តុកបច្ចុប្បន្ន' : 'Stock'}
+                    </p>
+                    <p className="text-sm font-bold" style={{ color: COLORS.navy }}>
+                      {productCount === null ? '...' : productCount}
+                    </p>
+                  </div>
+                </div>
               </div>
-              <p className="relative text-base font-bold text-white flex-shrink-0" style={latinFont}>
-                {formatMoney(incomeUSD, incomeKHR)}
-              </p>
             </div>
-            <div
-              className="relative flex items-center gap-3 p-3.5 rounded-2xl overflow-hidden mt-2.5"
-              style={{
-                background: 'linear-gradient(135deg, #F0785C, #E5533D)',
-                boxShadow: '0 5px 12px rgba(229,83,61,0.25)',
-              }}
-            >
-              <TrendingDown
-                size={72}
-                className="absolute opacity-20"
-                style={{ color: '#fff', top: -16, right: -14 }}
-              />
+
+            {/* Top customers by invoice amount */}
+            {topCustomers.length > 0 && (
               <div
-                className="relative flex items-center justify-center rounded-xl flex-shrink-0"
-                style={{ width: 34, height: 34, background: 'rgba(255,255,255,0.22)' }}
+                className="p-4 rounded-2xl mt-2.5"
+                style={{ backgroundColor: '#FFFFFF', boxShadow: '0 2px 8px rgba(12,68,124,0.08)' }}
               >
-                <TrendingDown size={18} className="text-white" />
+                <p className="text-sm font-bold mb-3.5" style={{ color: COLORS.navy }}>
+                  {lang === 'KH' ? 'អតិថិជនកំពូល (តាមទឹកប្រាក់វិក្កយបត្រ)' : 'Top Customers by Invoice Amount'}
+                </p>
+                <div className="space-y-2.5">
+                  {(() => {
+                    const maxTotal = Math.max(...topCustomers.map((c) => c.total), 1);
+                    return topCustomers.map((c) => (
+                      <div key={c.name}>
+                        <div className="flex justify-between items-center mb-1">
+                          <span className="text-xs font-semibold truncate mr-2" style={{ color: COLORS.navy }}>
+                            {c.name}
+                          </span>
+                          <span className="text-xs font-bold flex-shrink-0" style={{ color: COLORS.invoice, ...latinFont }}>
+                            ${c.total.toLocaleString(undefined, { maximumFractionDigits: 2 })}
+                          </span>
+                        </div>
+                        <div className="w-full h-2.5 rounded-full" style={{ backgroundColor: COLORS.invoiceTint }}>
+                          <div
+                            className="h-2.5 rounded-full"
+                            style={{
+                              width: `${Math.max(4, (c.total / maxTotal) * 100)}%`,
+                              background: 'linear-gradient(90deg, #4FA3E3, #2E86C1)',
+                            }}
+                          />
+                        </div>
+                      </div>
+                    ));
+                  })()}
+                </div>
               </div>
-              <div className="relative flex-1 min-w-0">
-                <p className="text-xs font-semibold text-white/85">{lang === 'KH' ? 'ចំណាយសរុប' : 'Expense'}</p>
-              </div>
-              <p className="relative text-base font-bold text-white flex-shrink-0" style={latinFont}>
-                {formatMoney(expenseUSD, expenseKHR)}
-              </p>
-            </div>
-            <div
-              className="relative flex items-center gap-3 p-3.5 rounded-2xl overflow-hidden mt-2.5"
-              style={{
-                background: 'linear-gradient(135deg, #4FA3E3, #2E86C1)',
-                boxShadow: '0 5px 12px rgba(46,134,193,0.25)',
-              }}
-            >
-              <Receipt
-                size={72}
-                className="absolute opacity-20"
-                style={{ color: '#fff', top: -16, right: -14 }}
-              />
-              <div
-                className="relative flex items-center justify-center rounded-xl flex-shrink-0"
-                style={{ width: 34, height: 34, background: 'rgba(255,255,255,0.22)' }}
-              >
-                <Receipt size={18} className="text-white" />
-              </div>
-              <div className="relative flex-1 min-w-0">
-                <p className="text-xs font-semibold text-white/85">{lang === 'KH' ? 'វិក្កយបត្រ' : 'Invoices'}</p>
-              </div>
-              <p className="relative text-base font-bold text-white flex-shrink-0">
-                {invoiceCount === null ? '...' : invoiceCount} {lang === 'KH' ? 'ច្បាប់' : ''}
-              </p>
-            </div>
-            <div
-              className="relative flex items-center gap-3 p-3.5 rounded-2xl overflow-hidden mt-2.5"
-              style={{
-                background: 'linear-gradient(135deg, #17A184, #0F6E56)',
-                boxShadow: '0 5px 12px rgba(15,110,86,0.25)',
-              }}
-            >
-              <Package
-                size={72}
-                className="absolute opacity-20"
-                style={{ color: '#fff', top: -16, right: -14 }}
-              />
-              <div
-                className="relative flex items-center justify-center rounded-xl flex-shrink-0"
-                style={{ width: 34, height: 34, background: 'rgba(255,255,255,0.22)' }}
-              >
-                <Package size={18} className="text-white" />
-              </div>
-              <div className="relative flex-1 min-w-0">
-                <p className="text-xs font-semibold text-white/85">{lang === 'KH' ? 'ស្តុកទំនិញ' : 'Stock'}</p>
-              </div>
-              <p className="relative text-base font-bold text-white flex-shrink-0">
-                {productCount === null ? '...' : productCount} {lang === 'KH' ? 'មុខ' : ''}
-              </p>
-            </div>
+            )}
 
             {/* Quick Actions */}
             <p className="text-sm font-bold mt-5 mb-2" style={{ color: COLORS.navy }}>
