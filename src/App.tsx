@@ -2144,8 +2144,10 @@ export default function App() {
           trialDaysRemaining={trialDaysRemaining}
           onClose={() => setShowSubscription(false)}
           onOpenTelegram={openTelegram}
-        />
-      )}
     </div>
+      )}
+    </>
   );
-}
+};
+
+export default App;
