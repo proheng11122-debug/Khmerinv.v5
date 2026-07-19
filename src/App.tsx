@@ -578,12 +578,12 @@ export default function App() {
      ============================================ */
   const AddTransactionModal = () => (
     <div
-      className="fixed inset-0 flex items-end z-40"
+      className="fixed inset-0 flex items-start justify-center z-40 overflow-y-auto py-6 px-3.5"
       style={{ backgroundColor: 'rgba(24,41,62,0.4)' }}
     >
       <div
-        className="w-full bg-white rounded-t-2xl p-6 max-h-[85vh] overflow-y-auto"
-        style={{ boxShadow: '0 -4px 10px rgba(24,41,62,0.1)' }}
+        className="w-full bg-white rounded-2xl p-6 max-h-[90vh] overflow-y-auto"
+        style={{ boxShadow: '0 4px 16px rgba(24,41,62,0.2)' }}
       >
         <div
           className="flex rounded-lg border p-1 mb-4"
@@ -1745,6 +1745,14 @@ export default function App() {
               </p>
             </div>
             <button
+              onClick={() => openAddModal('income')}
+              aria-label={lang === 'KH' ? 'បន្ថែមចំណូល / ចំណាយ' : 'Add Income / Expense'}
+              className="flex items-center justify-center"
+              style={{ width: 44, height: 44, borderRadius: 12, backgroundColor: COLORS.gold }}
+            >
+              <Plus size={INLINE} color="#FFFFFF" strokeWidth={2.5} />
+            </button>
+            <button
               onClick={() => setCurrentScreen('Report')}
               aria-label={lang === 'KH' ? 'របាយការណ៍' : 'Report'}
               className="flex items-center justify-center"
@@ -1755,16 +1763,6 @@ export default function App() {
           </div>
 
           <div className="flex-1 overflow-y-auto p-3.5 pb-24 -mt-4">
-            {/* Add income/expense — moved here now that the tab-bar + opens Create Invoice */}
-            <button
-              onClick={() => openAddModal('income')}
-              className="w-full flex items-center justify-center gap-1.5 py-3 rounded-xl font-bold text-white text-sm mb-2.5"
-              style={{ backgroundColor: COLORS.gold, boxShadow: '0 2px 8px rgba(12,68,124,0.15)' }}
-            >
-              <Plus size={18} color="#FFFFFF" strokeWidth={2.5} />
-              {lang === 'KH' ? 'បន្ថែមចំណូល / ចំណាយ' : 'Add Income / Expense'}
-            </button>
-
             {/* Currency view toggle — filter income/expense by USD, KHR (Riel), or both */}
             <div className="flex gap-2 mb-2.5">
               {[
@@ -1871,8 +1869,7 @@ export default function App() {
             </p>
             <div
               className="bg-white rounded-2xl overflow-hidden"
-              style={{ boxShadow: '0 2px 8px rgba(12,68,124,0.08)' }}
-              style={{ borderColor: COLORS.border }}
+              style={{ boxShadow: '0 2px 8px rgba(12,68,124,0.08)', borderColor: COLORS.border }}
             >
               <div className="flex px-3 py-2 border-b" style={{ backgroundColor: '#FAFAF8', borderColor: COLORS.border }}>
                 <span className="text-[10px] font-bold flex-[1.2]" style={{ color: COLORS.muted }}>
