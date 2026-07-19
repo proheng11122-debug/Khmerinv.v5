@@ -1769,7 +1769,7 @@ export default function App() {
             </div>
           )}
 
-          {isAddOpen && <AddTransactionModal />}
+      
           <TabBar />
         </div>
       )}
