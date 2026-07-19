@@ -1346,7 +1346,7 @@ export default function App() {
           {/* Content */}
           <div className="flex-1 overflow-y-auto p-3.5 pb-24">
             {/* Balance card */}
-            {isAddOpen && (
+           
   <div className="w-full bg-white rounded-2xl p-4 mb-4 border" style={{ borderColor: COLORS.border }}>
     <div className="flex rounded-lg border p-1 mb-4" style={{ borderColor: COLORS.border, backgroundColor: '#FAFAF8' }}>
       <button
@@ -1468,6 +1468,7 @@ export default function App() {
 
             {/* Monthly statistics — bar chart */}
             <div
+               {isAddOpen && (
               className="p-4 rounded-2xl mt-5"
               style={{ backgroundColor: '#FFFFFF', boxShadow: '0 2px 8px rgba(12,68,124,0.08)' }}
             >
