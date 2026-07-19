@@ -1465,10 +1465,10 @@ export default function App() {
                 </div>
               </div>
             </div>
+            {isAddOpen && (
 
             {/* Monthly statistics — bar chart */}
             <div
-               {isAddOpen && (
               className="p-4 rounded-2xl mt-5"
               style={{ backgroundColor: '#FFFFFF', boxShadow: '0 2px 8px rgba(12,68,124,0.08)' }}
             >
