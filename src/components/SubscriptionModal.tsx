@@ -35,14 +35,19 @@ const PLANS: {
   { key: '1y', months: 12, price: 14, originalPrice: 20, labelKh: '១ ឆ្នាំ', labelEn: '1 Year', tag: 'Best Value' },
 ];
 
+interface Profile {
+  subscription_qr_url: string | null;
+}
+
 interface Props {
   lang: 'KH' | 'EN';
+  profile: Profile;
   trialDaysRemaining: number;
   onClose: () => void;
   onOpenTelegram: () => void;
 }
 
-export default function SubscriptionModal({ lang, trialDaysRemaining, onClose, onOpenTelegram }: Props) {
+export default function SubscriptionModal({ lang, profile, trialDaysRemaining, onClose, onOpenTelegram }: Props) {
   const tr = (kh: string, en: string) => (lang === 'KH' ? kh : en);
   const [selected, setSelected] = useState<PlanKey>('1y');
   const [busy, setBusy] = useState(false);
@@ -92,8 +97,9 @@ export default function SubscriptionModal({ lang, trialDaysRemaining, onClose, o
   };
 
   const handleSaveQr = () => {
+    if (!profile.subscription_qr_url) return;
     const a = document.createElement('a');
-    a.href = '/subscription-qr.png';
+    a.href = profile.subscription_qr_url;
     a.download = 'kh-invoice-payment-qr.png';
     document.body.appendChild(a);
     a.click();
@@ -233,19 +239,33 @@ export default function SubscriptionModal({ lang, trialDaysRemaining, onClose, o
                   </p>
                 </div>
                 <div className="flex justify-center mb-3">
-                  <img
-                    src="/subscription-qr.png"
-                    alt="Payment QR"
-                    className="w-40 h-40 rounded-xl border bg-white object-cover"
-                    style={{ borderColor: COLORS.border }}
-                  />
+                  {profile.subscription_qr_url ? (
+                    <img
+                      src={profile.subscription_qr_url}
+                      alt="Payment QR"
+                      className="w-40 h-40 rounded-xl border bg-white object-cover"
+                      style={{ borderColor: COLORS.border }}
+                      crossOrigin="anonymous"
+                    />
+                  ) : (
+                    <div
+                      className="w-40 h-40 rounded-xl border flex flex-col items-center justify-center gap-1.5 text-center px-3"
+                      style={{ borderColor: COLORS.border, backgroundColor: COLORS.bgApp }}
+                    >
+                      <QrCode size={28} color={COLORS.muted} strokeWidth={1.5} />
+                      <p className="text-[10px]" style={{ color: COLORS.muted }}>
+                        {tr('QR មិនទាន់បានផ្ទុកឡើងទេ — ទាក់ទង Admin', 'QR not uploaded yet — contact admin')}
+                      </p>
+                    </div>
+                  )}
                 </div>
 
                 {/* Save QR / Upload proof, directly under the QR */}
                 <div className="grid grid-cols-2 gap-2 mb-1.5">
                   <button
                     onClick={handleSaveQr}
-                    className="flex items-center justify-center gap-1.5 py-2 rounded-lg border text-[11px] font-semibold"
+                    disabled={!profile.subscription_qr_url}
+                    className="flex items-center justify-center gap-1.5 py-2 rounded-lg border text-[11px] font-semibold disabled:opacity-50"
                     style={{ borderColor: COLORS.border, color: COLORS.navy, backgroundColor: '#FFFFFF' }}
                   >
                     <Download size={13} color={COLORS.navy} strokeWidth={2} />
@@ -278,7 +298,7 @@ export default function SubscriptionModal({ lang, trialDaysRemaining, onClose, o
                     ) : (
                       <>
                         <Upload size={13} color="#FFFFFF" strokeWidth={2} />
-                        {tr('ផ្ទុក QR (ផ្ទៀងផ្ទាត់)', 'Upload QR (verify)')}
+                        {tr('ផ្ទុករូបភាពបញ្ជាក់', 'Upload Proof')}
                       </>
                     )}
                   </button>

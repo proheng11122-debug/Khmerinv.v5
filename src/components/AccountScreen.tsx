@@ -29,6 +29,7 @@ interface Profile {
   trial_started_at: string | null;
   qr_code_url: string | null;
   avatar_url: string | null;
+  subscription_qr_url: string | null;
 }
 
 interface Props {
@@ -65,6 +66,10 @@ export default function AccountScreen({ lang, profile, onBack, onLogout, onLangT
 
   const [uploadingQr, setUploadingQr] = useState(false);
   const [qrError, setQrError] = useState('');
+
+  const [uploadingSubQr, setUploadingSubQr] = useState(false);
+  const [subQrError, setSubQrError] = useState('');
+  const subQrInputRef = useRef<HTMLInputElement>(null);
 
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
   const [avatarError, setAvatarError] = useState('');
@@ -155,6 +160,35 @@ export default function AccountScreen({ lang, profile, onBack, onLogout, onLangT
     setUploadingQr(false);
     if (error) {
       setQrError(error.message);
+      return;
+    }
+    if (data) onProfileUpdated(data as Profile);
+  };
+
+  const handleSubQrUpload = async (file: File) => {
+    setSubQrError('');
+    setUploadingSubQr(true);
+    const ext = file.name.split('.').pop() || 'png';
+    const path = `${profile.id}/subscription-qr.${ext}`;
+    const { error: uploadError } = await supabase.storage
+      .from('qr-codes')
+      .upload(path, file, { upsert: true });
+    if (uploadError) {
+      setUploadingSubQr(false);
+      setSubQrError(uploadError.message);
+      return;
+    }
+    const { data: publicUrlData } = supabase.storage.from('qr-codes').getPublicUrl(path);
+    const url = `${publicUrlData.publicUrl}?t=${Date.now()}`;
+    const { data, error } = await supabase
+      .from('profiles')
+      .update({ subscription_qr_url: url })
+      .eq('id', profile.id)
+      .select()
+      .maybeSingle();
+    setUploadingSubQr(false);
+    if (error) {
+      setSubQrError(error.message);
       return;
     }
     if (data) onProfileUpdated(data as Profile);
@@ -412,6 +446,64 @@ export default function AccountScreen({ lang, profile, onBack, onLogout, onLangT
               {qrError && (
                 <p className="text-[11px] mt-1.5" style={{ color: COLORS.danger }}>
                   {qrError}
+                </p>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* QR code for subscription payments (admin) */}
+        <div className="bg-white rounded-2xl p-4" style={{ boxShadow: '0 1px 3px rgba(12,68,124,0.08), 0 4px 12px rgba(12,68,124,0.06)', borderLeft: `4px solid ${COLORS.account}` }}>
+          <div className="flex items-center gap-2 mb-3">
+            <IconBadge icon={QrCode} size={INLINE} tint="account" shape="rounded" />
+            <p className="text-xs font-bold" style={{ color: COLORS.muted }}>
+              {tr('QR ទូទាត់សមាជិកភាព', 'Subscription Payment QR')}
+            </p>
+          </div>
+          <p className="text-[11px] mb-3" style={{ color: COLORS.muted }}>
+            {tr(
+              'រូបភាព QR នេះនឹងបង្ហាញនៅក្នុងផ្ទាំង "គម្រោងសមាជិកភាព" ដើម្បីអោយអ្នកប្រើប្រាស់ស្កេនទូទាត់',
+              'This QR image is shown in the "Subscription Plans" screen so users can scan to pay'
+            )}
+          </p>
+          <div className="flex items-center gap-3">
+            <div
+              className="w-20 h-20 rounded-xl border flex items-center justify-center overflow-hidden flex-shrink-0"
+              style={{ borderColor: COLORS.border, backgroundColor: COLORS.bgApp }}
+            >
+              {profile.subscription_qr_url ? (
+                <img src={profile.subscription_qr_url} alt="Subscription QR" className="w-full h-full object-cover" />
+              ) : (
+                <QrCode size={28} color={COLORS.muted} strokeWidth={1.5} />
+              )}
+            </div>
+            <div className="flex-1">
+              <input
+                ref={subQrInputRef}
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (file) handleSubQrUpload(file);
+                }}
+              />
+              <button
+                onClick={() => subQrInputRef.current?.click()}
+                disabled={uploadingSubQr}
+                className="flex items-center justify-center gap-1.5 w-full py-2.5 rounded-lg border font-bold text-xs disabled:opacity-60"
+                style={{ borderColor: COLORS.border, color: COLORS.navy }}
+              >
+                <Upload size={14} color={COLORS.navy} strokeWidth={2} />
+                {uploadingSubQr
+                  ? tr('កំពុងផ្ទុកឡើង...', 'Uploading...')
+                  : profile.subscription_qr_url
+                  ? tr('ប្តូររូបភាព', 'Change Image')
+                  : tr('ផ្ទុករូបភាពឡើង', 'Upload Image')}
+              </button>
+              {subQrError && (
+                <p className="text-[11px] mt-1.5" style={{ color: COLORS.danger }}>
+                  {subQrError}
                 </p>
               )}
             </div>

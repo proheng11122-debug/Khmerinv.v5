@@ -559,9 +559,11 @@ export default function InvoiceScreen({ lang, profile, onBack, editInvoiceId }: 
                       />
                     </div>
                     <div>
-                      <label className="text-[10px] font-semibold block mb-0.5 text-gray-500">{tr('តម្លៃរាយ', 'Price')}</label>
+                      <label className="text-[10px] font-semibold block mb-0.5 text-gray-500">
+                        {tr('តម្លៃរាយ', 'Price')} ({currency === 'USD' ? '$' : '៛'})
+                      </label>
                       <div className="relative flex items-center">
-                        <span className="absolute left-2.5 text-xs font-bold text-gray-400">{currency === 'USD' ? '$' : '៛'}</span>
+                        <span className="absolute left-2.5 text-sm font-extrabold" style={{ color: COLORS.navy }}>{currency === 'USD' ? '$' : '៛'}</span>
                         <input
                           type="number"
                           value={item.unit_price}
@@ -689,10 +691,10 @@ export default function InvoiceScreen({ lang, profile, onBack, editInvoiceId }: 
                     <div>
                       <label className="text-[11px] font-bold flex items-center gap-1 mb-1" style={{ color: COLORS.navy }}>
                         <DollarSign size={12} />
-                        {tr('ប្រាក់បានបង់', 'Amount Paid')}
+                        {tr('ប្រាក់បានបង់', 'Amount Paid')} ({currency === 'USD' ? '$' : '៛'})
                       </label>
                       <div className="relative flex items-center">
-                        <span className="absolute left-2.5 text-xs font-bold text-gray-400">{currency === 'USD' ? '$' : '៛'}</span>
+                        <span className="absolute left-2.5 text-sm font-extrabold" style={{ color: COLORS.navy }}>{currency === 'USD' ? '$' : '៛'}</span>
                         <input
                           type="number"
                           value={paidInput}
@@ -706,10 +708,10 @@ export default function InvoiceScreen({ lang, profile, onBack, editInvoiceId }: 
                     <div>
                       <label className="text-[11px] font-bold flex items-center gap-1 mb-1" style={{ color: COLORS.navy }}>
                         <Percent size={12} />
-                        {tr('ការបញ្ចុះតម្លៃ', 'Discount')}
+                        {tr('ការបញ្ចុះតម្លៃ', 'Discount')} ({currency === 'USD' ? '$' : '៛'})
                       </label>
                       <div className="relative flex items-center">
-                        <span className="absolute left-2.5 text-xs font-bold text-gray-400">{currency === 'USD' ? '$' : '៛'}</span>
+                        <span className="absolute left-2.5 text-sm font-extrabold" style={{ color: COLORS.navy }}>{currency === 'USD' ? '$' : '៛'}</span>
                         <input
                           type="number"
                           value={discount}
@@ -721,6 +723,7 @@ export default function InvoiceScreen({ lang, profile, onBack, editInvoiceId }: 
                       </div>
                     </div>
                   </div>
+
 
                   <div>
                     <label className="text-[11px] font-bold flex items-center gap-1 mb-1" style={{ color: COLORS.navy }}>
