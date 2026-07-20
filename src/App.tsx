@@ -23,6 +23,10 @@ import {
   User as UserIcon,
   BarChart3,
   DollarSign,
+  Download,
+  Share2,
+  X,
+  CheckCircle2,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { supabase } from './lib/supabaseClient';
@@ -54,6 +58,7 @@ interface Profile {
   trial_started_at: string | null;
   qr_code_url: string | null;
   avatar_url: string | null;
+  subscription_qr_url: string | null;
 }
 
 interface Transaction {
@@ -192,6 +197,50 @@ export default function App() {
     const timer = setInterval(() => setTimeStr(new Date().toTimeString().split(' ')[0]), 1000);
     return () => clearInterval(timer);
   }, []);
+
+  // ---------- PWA "Install App" banner ----------
+  const [installPromptEvent, setInstallPromptEvent] = useState<BeforeInstallPromptEvent | null>(null);
+  const [showInstallBanner, setShowInstallBanner] = useState(false);
+  const [showIOSInstallHelp, setShowIOSInstallHelp] = useState(false);
+
+  useEffect(() => {
+    const isStandalone =
+      window.matchMedia('(display-mode: standalone)').matches ||
+      (window.navigator as { standalone?: boolean }).standalone === true;
+    if (isStandalone) return;
+    if (localStorage.getItem('kh-invoice-install-dismissed') === '1') return;
+
+    const isIOS = /iphone|ipad|ipod/i.test(window.navigator.userAgent);
+    if (isIOS) {
+      setShowInstallBanner(true);
+      return;
+    }
+
+    const handler = (e: Event) => {
+      e.preventDefault();
+      setInstallPromptEvent(e as BeforeInstallPromptEvent);
+      setShowInstallBanner(true);
+    };
+    window.addEventListener('beforeinstallprompt', handler);
+    return () => window.removeEventListener('beforeinstallprompt', handler);
+  }, []);
+
+  const dismissInstallBanner = () => {
+    setShowInstallBanner(false);
+    localStorage.setItem('kh-invoice-install-dismissed', '1');
+  };
+
+  const handleInstallClick = async () => {
+    if (installPromptEvent) {
+      await installPromptEvent.prompt();
+      await installPromptEvent.userChoice;
+      setInstallPromptEvent(null);
+      setShowInstallBanner(false);
+      return;
+    }
+    // iOS has no programmatic prompt — walk the user through it instead.
+    setShowIOSInstallHelp(true);
+  };
 
   const trialDaysRemaining = getTrialDaysRemaining(profile?.trial_started_at ?? null);
   const showTrialBanner = trialDaysRemaining > 0 && trialDaysRemaining <= 7;
@@ -1343,6 +1392,32 @@ export default function App() {
             </div>
           )}
 
+          {/* Install App banner */}
+          {showInstallBanner && (
+            <div className="mx-3.5 mt-3 flex items-center gap-2.5 p-3 rounded-2xl" style={{ backgroundColor: '#FFFFFF', boxShadow: '0 2px 8px rgba(12,68,124,0.1)', border: `1px solid ${COLORS.border}` }}>
+              <img src="/icon-192.png" alt="" className="w-10 h-10 rounded-xl flex-shrink-0" />
+              <div className="flex-1 min-w-0">
+                <p className="text-xs font-bold" style={{ color: COLORS.navy }}>
+                  {lang === 'KH' ? 'ដំឡើង KH Invoice ជា App' : 'Install KH Invoice App'}
+                </p>
+                <p className="text-[10px]" style={{ color: COLORS.muted }}>
+                  {lang === 'KH' ? 'បើកលឿន ប្រើក្រៅបណ្តាញបាន' : 'Faster access, works offline'}
+                </p>
+              </div>
+              <button
+                onClick={handleInstallClick}
+                className="flex items-center gap-1 px-3 py-2 rounded-lg font-bold text-white text-xs flex-shrink-0"
+                style={{ backgroundColor: COLORS.gold }}
+              >
+                <Download size={13} color="#FFFFFF" strokeWidth={2.5} />
+                {lang === 'KH' ? 'ដំឡើង' : 'Install'}
+              </button>
+              <button onClick={dismissInstallBanner} aria-label="Dismiss" className="flex-shrink-0">
+                <X size={16} color={COLORS.muted} strokeWidth={2} />
+              </button>
+            </div>
+          )}
+
           {/* Content */}
           <div className="flex-1 overflow-y-auto p-3.5 pb-24">
             {/* Balance card */}
@@ -1710,6 +1785,60 @@ export default function App() {
             </div>
           )}
 
+          {showIOSInstallHelp && (
+            <div
+              className="fixed inset-0 flex items-end z-40"
+              style={{ backgroundColor: 'rgba(24,41,62,0.4)' }}
+              onClick={() => setShowIOSInstallHelp(false)}
+            >
+              <div
+                className="w-full bg-white rounded-t-2xl p-6"
+                style={{ boxShadow: '0 -4px 10px rgba(24,41,62,0.1)' }}
+                onClick={(e) => e.stopPropagation()}
+              >
+                <div className="flex items-center gap-2 mb-3">
+                  <img src="/icon-192.png" alt="" className="w-9 h-9 rounded-lg" />
+                  <h3 className="text-base font-bold" style={{ color: COLORS.navy }}>
+                    {lang === 'KH' ? 'ដំឡើង KH Invoice' : 'Install KH Invoice'}
+                  </h3>
+                </div>
+                <div className="space-y-3">
+                  <div className="flex items-center gap-3">
+                    <div className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0" style={{ backgroundColor: COLORS.goldTint }}>
+                      <Share2 size={14} color={COLORS.goldDark} strokeWidth={2} />
+                    </div>
+                    <p className="text-sm" style={{ color: COLORS.navy }}>
+                      {lang === 'KH' ? '១. ចុចរូប Share នៅខាងក្រោម Safari' : '1. Tap the Share icon in Safari'}
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <div className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0" style={{ backgroundColor: COLORS.goldTint }}>
+                      <Plus size={14} color={COLORS.goldDark} strokeWidth={2} />
+                    </div>
+                    <p className="text-sm" style={{ color: COLORS.navy }}>
+                      {lang === 'KH' ? '២. ជ្រើស "Add to Home Screen"' : '2. Select "Add to Home Screen"'}
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <div className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0" style={{ backgroundColor: COLORS.goldTint }}>
+                      <CheckCircle2 size={14} color={COLORS.goldDark} strokeWidth={2} />
+                    </div>
+                    <p className="text-sm" style={{ color: COLORS.navy }}>
+                      {lang === 'KH' ? '៣. ចុច "Add" — រួចរាល់!' : '3. Tap "Add" — done!'}
+                    </p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setShowIOSInstallHelp(false)}
+                  className="w-full py-3 rounded-lg font-bold text-white text-sm mt-5"
+                  style={{ backgroundColor: COLORS.navy }}
+                >
+                  {lang === 'KH' ? 'យល់ព្រម' : 'Got it'}
+                </button>
+              </div>
+            </div>
+          )}
+
           {isAddOpen && <AddTransactionModal />}
           <TabBar />
         </div>
@@ -2001,9 +2130,10 @@ export default function App() {
         <ReportScreen lang={lang} profile={profile} onBack={() => setCurrentScreen('Home')} />
       )}
 
-      {showSubscription && (
+      {showSubscription && profile && (
         <SubscriptionModal
           lang={lang}
+          profile={profile}
           trialDaysRemaining={trialDaysRemaining}
           onClose={() => setShowSubscription(false)}
           onOpenTelegram={openTelegram}
