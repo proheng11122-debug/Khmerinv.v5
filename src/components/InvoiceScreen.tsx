@@ -14,6 +14,9 @@ import {
   Package,
   Calendar,
   FileText,
+  Minus,
+  DollarSign,
+  Percent,
 } from 'lucide-react';
 import { supabase } from '../lib/supabaseClient';
 import { IconBadge } from './IconBadge';
@@ -85,6 +88,7 @@ export default function InvoiceScreen({ lang, profile, onBack, editInvoiceId }: 
   const [paidInput, setPaidInput] = useState('0');
   const [paymentDate, setPaymentDate] = useState(() => new Date().toISOString().slice(0, 10));
   const [paymentNote, setPaymentNote] = useState('');
+  const [showPaymentPanel, setShowPaymentPanel] = useState(false);
 
   const [invoiceNumber, setInvoiceNumber] = useState<number | null>(null);
   const [saveBusy, setSaveBusy] = useState(false);
@@ -176,6 +180,7 @@ export default function InvoiceScreen({ lang, profile, onBack, editInvoiceId }: 
       setCurrency(inv.currency || 'USD');
       setDiscount(String(inv.discount || '0'));
       setPaidInput(String(inv.paid_amount || '0'));
+      if (Number(inv.discount) > 0 || Number(inv.paid_amount) > 0) setShowPaymentPanel(true);
 
       const { data: itemRows } = await supabase
         .from('invoice_items')
@@ -614,85 +619,120 @@ export default function InvoiceScreen({ lang, profile, onBack, editInvoiceId }: 
               ))}
             </div>
 
-            {/* Currency, Discount & Payments Controls */}
-            <div className="bg-white rounded-2xl p-4 border space-y-3" style={{ borderColor: COLORS.border }}>
-              <div>
-                <label className="text-xs font-semibold block mb-1 text-gray-700">{tr('រូបិយប័ណ្ណ', 'Currency')}</label>
-                <div className="flex gap-1.5">
-                  <button
-                    onClick={() => setCurrency('USD')}
-                    className="flex-1 py-2 rounded-lg border text-xs font-bold"
-                    style={{ backgroundColor: currency === 'USD' ? COLORS.invoice : '#FFF', color: currency === 'USD' ? '#FFF' : '#333', borderColor: COLORS.border }}
-                  >
-                    USD
-                  </button>
-                  <button
-                    onClick={() => setCurrency('KHR')}
-                    className="flex-1 py-2 rounded-lg border text-xs font-bold"
-                    style={{ backgroundColor: currency === 'KHR' ? COLORS.invoice : '#FFF', color: currency === 'KHR' ? '#FFF' : '#333', borderColor: COLORS.border }}
-                  >
-                    KHR
-                  </button>
-                </div>
+            {/* Currency — placed above the payment section on its own */}
+            <div className="bg-white rounded-2xl p-3.5 border" style={{ borderColor: COLORS.border }}>
+              <label className="text-xs font-semibold block mb-1.5 text-gray-700">{tr('រូបិយប័ណ្ណ', 'Currency')}</label>
+              <div className="flex gap-1.5">
+                <button
+                  onClick={() => setCurrency('USD')}
+                  className="flex-1 py-2 rounded-lg border text-xs font-bold"
+                  style={{ backgroundColor: currency === 'USD' ? COLORS.invoice : '#FFF', color: currency === 'USD' ? '#FFF' : '#333', borderColor: COLORS.border }}
+                >
+                  USD
+                </button>
+                <button
+                  onClick={() => setCurrency('KHR')}
+                  className="flex-1 py-2 rounded-lg border text-xs font-bold"
+                  style={{ backgroundColor: currency === 'KHR' ? COLORS.invoice : '#FFF', color: currency === 'KHR' ? '#FFF' : '#333', borderColor: COLORS.border }}
+                >
+                  KHR
+                </button>
               </div>
+            </div>
 
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="text-xs font-semibold block mb-1 text-gray-700">{tr('ការបញ្ចុះតម្លៃ (ទឹកប្រាក់)', 'Discount (Cash)')}</label>
-                  <div className="relative flex items-center">
-                    <span className="absolute left-2.5 text-xs font-bold text-gray-400">{currency === 'USD' ? '$' : '៛'}</span>
-                    <input
-                      type="number"
-                      value={discount}
-                      onChange={(e) => setDiscount(e.target.value)}
-                      placeholder="0.00"
-                      className="w-full rounded-lg border pl-7 pr-2.5 py-2 text-sm outline-none"
-                      style={inputStyle}
-                    />
+            {/* Payment card — collapsed by default, "+" opens the panel */}
+            <div className="bg-white rounded-2xl border overflow-hidden" style={{ borderColor: COLORS.border }}>
+              <button
+                onClick={() => setShowPaymentPanel((v) => !v)}
+                className="w-full flex items-center justify-between px-4 py-3"
+              >
+                <div className="flex items-center gap-2">
+                  <span className="w-7 h-7 rounded-full flex items-center justify-center" style={{ backgroundColor: COLORS.invoiceTint }}>
+                    <DollarSign size={14} color={COLORS.invoice} strokeWidth={2.5} />
+                  </span>
+                  <div className="text-left">
+                    <p className="text-xs font-bold" style={{ color: COLORS.navy }}>{tr('ការទូទាត់ប្រាក់', 'Payment')}</p>
+                    {(paidVal > 0 || discountVal > 0) && (
+                      <p className="text-[10px]" style={{ color: COLORS.muted }}>
+                        {tr('បានបង់', 'Paid')} {fmtMoney(paidVal, currency)}
+                        {discountVal > 0 && ` · ${tr('បញ្ចុះ', 'Disc.')} ${fmtMoney(discountVal, currency)}`}
+                      </p>
+                    )}
                   </div>
                 </div>
-                <div>
-                  <label className="text-xs font-semibold block mb-1 text-gray-700">{tr('ប្រាក់បានបង់រួច', 'Paid Amount')}</label>
-                  <div className="relative flex items-center">
-                    <span className="absolute left-2.5 text-xs font-bold text-gray-400">{currency === 'USD' ? '$' : '៛'}</span>
-                    <input
-                      type="number"
-                      value={paidInput}
-                      onChange={(e) => setPaidInput(e.target.value)}
-                      placeholder="0.00"
-                      className="w-full rounded-lg border pl-7 pr-2.5 py-2 text-sm outline-none"
-                      style={inputStyle}
-                    />
-                  </div>
-                </div>
-              </div>
+                <span className="w-7 h-7 rounded-full flex items-center justify-center" style={{ backgroundColor: COLORS.invoiceTint }}>
+                  {showPaymentPanel ? (
+                    <Minus size={15} color={COLORS.invoice} strokeWidth={2.5} />
+                  ) : (
+                    <Plus size={15} color={COLORS.invoice} strokeWidth={2.5} />
+                  )}
+                </span>
+              </button>
 
-              {parseFloat(paidInput) > 0 && (
-                <div className="pt-2 mt-2 border-t border-gray-100 space-y-2">
-                  <div>
-                    <label className="text-[11px] font-bold flex items-center gap-1 text-amber-700">
+              {showPaymentPanel && (
+                <div className="px-4 pb-4 space-y-3" style={{ borderTop: `1px solid ${COLORS.border}` }}>
+                  <div className="pt-3">
+                    <label className="text-[11px] font-bold flex items-center gap-1 mb-1" style={{ color: COLORS.navy }}>
                       <Calendar size={12} />
-                      {tr('ថ្ងៃទីអតិថិជនបង់ប្រាក់ (សម្រាប់របាយការណ៍)', 'Payment Date (For Report)')}
+                      {tr('ថ្ងៃទីអតិថិជនបង់ប្រាក់', 'Payment Date')}
                     </label>
                     <input
                       type="date"
                       value={paymentDate}
                       onChange={(e) => setPaymentDate(e.target.value)}
-                      className="w-full rounded-lg border px-2.5 py-2 text-xs outline-none mt-1"
+                      className="w-full rounded-lg border px-2.5 py-2 text-xs outline-none"
                       style={inputStyle}
                     />
                   </div>
+
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="text-[11px] font-bold flex items-center gap-1 mb-1" style={{ color: COLORS.navy }}>
+                        <DollarSign size={12} />
+                        {tr('ប្រាក់បានបង់', 'Amount Paid')}
+                      </label>
+                      <div className="relative flex items-center">
+                        <span className="absolute left-2.5 text-xs font-bold text-gray-400">{currency === 'USD' ? '$' : '៛'}</span>
+                        <input
+                          type="number"
+                          value={paidInput}
+                          onChange={(e) => setPaidInput(e.target.value)}
+                          placeholder="0.00"
+                          className="w-full rounded-lg border pl-7 pr-2.5 py-2 text-sm outline-none"
+                          style={inputStyle}
+                        />
+                      </div>
+                    </div>
+                    <div>
+                      <label className="text-[11px] font-bold flex items-center gap-1 mb-1" style={{ color: COLORS.navy }}>
+                        <Percent size={12} />
+                        {tr('ការបញ្ចុះតម្លៃ', 'Discount')}
+                      </label>
+                      <div className="relative flex items-center">
+                        <span className="absolute left-2.5 text-xs font-bold text-gray-400">{currency === 'USD' ? '$' : '៛'}</span>
+                        <input
+                          type="number"
+                          value={discount}
+                          onChange={(e) => setDiscount(e.target.value)}
+                          placeholder="0.00"
+                          className="w-full rounded-lg border pl-7 pr-2.5 py-2 text-sm outline-none"
+                          style={inputStyle}
+                        />
+                      </div>
+                    </div>
+                  </div>
+
                   <div>
-                    <label className="text-[11px] font-bold flex items-center gap-1 text-slate-600">
+                    <label className="text-[11px] font-bold flex items-center gap-1 mb-1" style={{ color: COLORS.navy }}>
                       <FileText size={12} />
-                      {tr('ចំណាំការបង់ប្រាក់', 'Payment Description/Note')}
+                      {tr('ចំណាំ', 'Description')}
                     </label>
                     <input
                       type="text"
                       value={paymentNote}
                       onChange={(e) => setPaymentNote(e.target.value)}
                       placeholder={tr('ឧទាហរណ៍៖ បង់តាមកុងវីង, ABA...', 'e.g. Paid via ABA')}
-                      className="w-full rounded-lg border px-2.5 py-2 text-xs outline-none mt-1"
+                      className="w-full rounded-lg border px-2.5 py-2 text-xs outline-none"
                       style={inputStyle}
                     />
                   </div>
