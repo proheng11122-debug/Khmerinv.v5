@@ -1,28 +1,17 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
-
-@layer base {
-  html {
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-  }
+:root {
+  font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+  line-height: 1.5;
+  color-scheme: light dark;
 }
 
-/* Report → Save PDF: print only the report content, nothing else. */
-@media print {
-  body * {
-    visibility: hidden;
-  }
-  #report-print-area,
-  #report-print-area * {
-    visibility: visible;
-  }
-  #report-print-area {
-    position: absolute;
-    left: 0;
-    top: 0;
-    width: 100%;
-    padding: 16px;
-  }
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background: #07193a;
+}
+
+.khmer {
+  font-family: 'Noto Sans Khmer', 'Battambang', system-ui, sans-serif;
 }

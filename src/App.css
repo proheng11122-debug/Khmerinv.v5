@@ -229,6 +229,9 @@
   border-radius: 50%;
   background: rgba(255,255,255,0.3);
   transition: all 0.25s ease;
+  border: none;
+  padding: 0;
+  cursor: pointer;
 }
 
 .sdot.on {
@@ -269,6 +272,8 @@
   font-size: 0.97rem;
   font-weight: 700;
   transition: transform 0.15s ease, box-shadow 0.15s ease;
+  cursor: pointer;
+  border: none;
 }
 
 .auth-btn.primary {
@@ -362,6 +367,9 @@
   justify-content: center;
   color: #64748b;
   transition: background 0.2s;
+  cursor: pointer;
+  border: none;
+  background: transparent;
 }
 
 .modal-x:hover { background: #f1f5f9; }
@@ -426,6 +434,8 @@
   font-weight: 700;
   font-size: 0.97rem;
   transition: background 0.2s, transform 0.1s;
+  border: none;
+  cursor: pointer;
 }
 
 .modal-ok:hover { background: #1341a8; }
@@ -561,6 +571,8 @@
   font-weight: 700;
   font-size: 0.95rem;
   transition: background 0.2s, transform 0.1s;
+  border: none;
+  cursor: pointer;
 }
 
 .ios-nav-btn.prev {
