@@ -5,49 +5,17 @@ import './InstallModal.css'
 type Platform = 'android' | 'ios'
 
 const androidSteps = [
-  {
-    title: 'បើក Chrome Browser',
-    sub: 'Open Chrome',
-    desc: 'បើកកម្មវិធី Chrome នៅលើទូរស័ព្ទ Android របស់អ្នក។ បន្ទាប់មកចូលទៅកាន់គេហទំព័រ KH Invoice។'
-  },
-  {
-    title: 'ចុចលើប៊ូតុងម៉ឺនុយ',
-    sub: 'Tap menu (⋮)',
-    desc: 'ចុចលើរូបតំណាង⋮ នៅផ្នែកខាងស្ដាំផ្នែកខាងលើនៃ Chrome។'
-  },
-  {
-    title: 'ជ្រើសរើស "Add to Home screen"',
-    sub: 'Choose Install app',
-    desc: 'រំកិលចុះ ហើយជ្រើសរើស "Add to Home screen" ឬ "Install app" ដើម្បីដំឡើង KH Invoice ទៅក្នុងទូរស័ព្ទ។'
-  },
-  {
-    title: 'បញ្ជាក់ដំឡើង',
-    sub: 'Confirm install',
-    desc: 'ចុច "Install" ដើម្បីបញ្ជាក់។ រូបតំណាង KH Invoice នឹងបង្ហាញនៅលើ home screen របស់អ្នក។'
-  }
+  { title: 'បើក Chrome Browser', sub: 'Open Chrome', desc: 'បើកកម្មវិធី Chrome នៅលើទូរស័ព្ទ Android របស់អ្នក។ បន្ទាប់មកចូលទៅកាន់គេហទំព័រ KH Invoice។' },
+  { title: 'ចុចលើប៊ូតុងម៉ឺនុយ', sub: 'Tap menu (⋮)', desc: 'ចុចលើរូបតំណាង⋮ នៅផ្នែកខាងស្ដាំផ្នែកខាងលើនៃ Chrome។' },
+  { title: 'ជ្រើសរើស "Add to Home screen"', sub: 'Choose Install app', desc: 'រំកិលចុះ ហើយជ្រើសរើស "Add to Home screen" ឬ "Install app" ដើម្បីដំឡើង KH Invoice ទៅក្នុងទូរស័ព្ទ។' },
+  { title: 'បញ្ជាក់ដំឡើង', sub: 'Confirm install', desc: 'ចុច "Install" ដើម្បីបញ្ជាក់។ រូបតំណាង KH Invoice នឹងបង្ហាញនៅលើ home screen របស់អ្នក។' }
 ]
 
 const iosSteps = [
-  {
-    title: 'បើក Safari',
-    sub: 'Open Safari',
-    desc: 'បើកកម្មវិធី Safari នៅលើ iPhone ឬ iPad របស់អ្នក។ បន្ទាប់មកចូលទៅកាន់គេហទំព័រ KH Invoice។'
-  },
-  {
-    title: 'ចុចប៊ូតុង Share',
-    sub: 'Tap Share',
-    desc: 'ចុចលើរូបតំណាង Share (ការ៉េមានព្រួលឡើងលើ) នៅផ្នែកខាងក្រោម ឬខាងស្ដាំផ្នែកខាងលើនៃ Safari។'
-  },
-  {
-    title: 'ជ្រើសរើស "Add to Home Screen"',
-    sub: 'Choose Add to Home Screen',
-    desc: 'រំកិលចុះក្នុងបញ្ជី Share ហើយជ្រើសរើស "Add to Home Screen"។'
-  },
-  {
-    title: 'បញ្ជាក់ដោយចុច "Add"',
-    sub: 'Tap Add',
-    desc: 'ចុច "Add" នៅផ្នែកខាងស្ដាំផ្នែកខាងលើ។ KH Invoice នឹងត្រូវបានបន្ថែមទៅ home screen របស់អ្នក។'
-  }
+  { title: 'បើក Safari', sub: 'Open Safari', desc: 'បើកកម្មវិធី Safari នៅលើ iPhone ឬ iPad របស់អ្នក។ បន្ទាប់មកចូលទៅកាន់គេហទំព័រ KH Invoice។' },
+  { title: 'ចុចប៊ូតុង Share', sub: 'Tap Share', desc: 'ចុចលើរូបតំណាង Share (ការ៉េមានព្រួលឡើងលើ) នៅផ្នែកខាងក្រោម ឬខាងស្ដាំផ្នែកខាងលើនៃ Safari។' },
+  { title: 'ជ្រើសរើស "Add to Home Screen"', sub: 'Choose Add to Home Screen', desc: 'រំកិលចុះក្នុងបញ្ជី Share ហើយជ្រើសរើស "Add to Home Screen"។' },
+  { title: 'បញ្ជាក់ដោយចុច "Add"', sub: 'Tap Add', desc: 'ចុច "Add" នៅផ្នែកខាងស្ដាំផ្នែកខាងលើ។ KH Invoice នឹងត្រូវបានបន្ថែមទៅ home screen របស់អ្នក។' }
 ]
 
 export default function InstallModal({ platform, onClose }: { platform: Platform; onClose: () => void }) {
