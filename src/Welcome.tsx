@@ -32,7 +32,6 @@ export default function Welcome({ onBack }: { onBack: () => void }) {
     }
 
     setLoading(true)
-    // Simulated auth — replace with Supabase auth later
     setTimeout(() => {
       setLoading(false)
       setError(null)
@@ -42,7 +41,6 @@ export default function Welcome({ onBack }: { onBack: () => void }) {
 
   return (
     <div className="welcome-page">
-      {/* Header */}
       <header className="welcome-header">
         <button className="welcome-back" onClick={onBack} aria-label="Back">
           <ArrowLeft size={20} />
@@ -52,7 +50,6 @@ export default function Welcome({ onBack }: { onBack: () => void }) {
         </div>
       </header>
 
-      {/* Hero */}
       <section className="welcome-hero">
         <h1 className="welcome-title khmer">
           {mode === 'signin' ? 'ស្វាគមន៍មកវិញ!' : 'បង្កើតគណនី'}
@@ -64,7 +61,6 @@ export default function Welcome({ onBack }: { onBack: () => void }) {
         </p>
       </section>
 
-      {/* Tab switch */}
       <div className="welcome-tabs">
         <button
           className={`wtab ${mode === 'signin' ? 'on' : ''} khmer`}
@@ -84,7 +80,6 @@ export default function Welcome({ onBack }: { onBack: () => void }) {
         />
       </div>
 
-      {/* Form */}
       <form className="welcome-form" onSubmit={submit}>
         {mode === 'signup' && (
           <label className="wfield">
@@ -174,14 +169,12 @@ export default function Welcome({ onBack }: { onBack: () => void }) {
         </button>
       </form>
 
-      {/* Divider */}
       <div className="wdivider">
         <span className="wdivider-line" />
         <span className="wdivider-text">ឬ</span>
         <span className="wdivider-line" />
       </div>
 
-      {/* Social (placeholder) */}
       <div className="wsocial-row">
         <button className="wsocial" aria-label="Continue with Google">
           <svg width="20" height="20" viewBox="0 0 24 24">

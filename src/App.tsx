@@ -6,6 +6,7 @@ import './App.css'
 
 type Platform = 'android' | 'ios'
 type Screen = 'landing' | 'welcome'
+
 const slides = [
   { src: 'https://images.pexels.com/photos/669454/pexels-photo-669454.jpeg?auto=compress&cs=tinysrgb&w=400', label: 'ផ្ទាំង Dashboard' },
   { src: 'https://images.pexels.com/photos/669615/pexels-photo-669615.jpeg?auto=compress&cs=tinysrgb&w=400', label: 'បង្កើតវិក្កយបត្រ' },
@@ -48,13 +49,11 @@ export default function App() {
 
   return (
     <div className="page">
-      {/* ── TOP: Hero ── */}
       <section className="top">
         <div className="app-icon"><FileText size={44} strokeWidth={1.6} /></div>
         <h1 className="app-name khmer">KH Invoice</h1>
         <p className="app-tagline khmer">កម្មវិធីបង្កើត និងគ្រប់គ្រងវិក្កយបត្រ</p>
 
-        {/* ── App description ── */}
         <div className="app-desc">
           <p className="app-desc-line khmer app-desc-main">បង្កើតវិក្កយបត្រ គ្រប់គ្រងស្ដុកដោយស្វ័យប្រវត្តិ</p>
           <p className="app-desc-line khmer">តាមដានចំណូលចំណាយ &amp;បំណុល គ្រប់ប្រភេទប្រចាំខែ</p>
@@ -62,7 +61,6 @@ export default function App() {
         </div>
       </section>
 
-      {/* ── MIDDLE: Screenshots ── */}
       <section className="middle">
         <div className="phone-shell">
           <div className="phone-notch" />
@@ -110,7 +108,6 @@ export default function App() {
         </div>
       </section>
 
-      {/* ── BOTTOM: Auth ── */}
       <section className="bottom">
         <p className="bottom-caption khmer">ចូលគណនី ឬ បង្កើតគណនីថ្មី ដើម្បីចាប់ផ្តើមប្រើប្រាស់</p>
         <div className="auth-row">

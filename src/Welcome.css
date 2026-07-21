@@ -12,7 +12,6 @@
   animation: wFadeIn 0.3s ease;
 }
 
-/* Header */
 .welcome-header {
   display: flex;
   align-items: center;
@@ -59,7 +58,6 @@
   box-shadow: 0 6px 18px rgba(0,0,0,0.25);
 }
 
-/* Hero */
 .welcome-hero {
   padding: 20px 0 24px;
   text-align: left;
@@ -82,7 +80,6 @@
   animation: wFadeUp 0.4s ease 0.1s both;
 }
 
-/* Tabs */
 .welcome-tabs {
   position: relative;
   display: flex;
@@ -123,7 +120,6 @@
   box-shadow: 0 2px 8px rgba(0,0,0,0.15);
 }
 
-/* Form */
 .welcome-form {
   display: flex;
   flex-direction: column;
@@ -197,7 +193,6 @@
 
 .wfield-eye:hover { color: #fff; background: rgba(255,255,255,0.1); }
 
-/* Checkbox */
 .wcheck {
   display: flex;
   align-items: flex-start;
@@ -241,7 +236,6 @@
 
 .wlink:hover { text-decoration: underline; }
 
-/* Error */
 .werror {
   background: rgba(239, 68, 68, 0.15);
   border: 1px solid rgba(239, 68, 68, 0.4);
@@ -252,7 +246,6 @@
   line-height: 1.5;
 }
 
-/* Submit */
 .wsubmit {
   width: 100%;
   padding: 14px;
@@ -285,7 +278,6 @@
   animation: wSpin 0.7s linear infinite;
 }
 
-/* Divider */
 .wdivider {
   display: flex;
   align-items: center;
@@ -305,7 +297,6 @@
   font-weight: 500;
 }
 
-/* Social */
 .wsocial-row {
   display: flex;
   flex-direction: column;
@@ -333,7 +324,6 @@
 .wsocial:hover { background: rgba(255,255,255,0.14); }
 .wsocial:active { transform: scale(0.98); }
 
-/* Footer link */
 .welcome-foot {
   text-align: center;
   font-size: 0.85rem;
@@ -354,12 +344,10 @@
 
 .wlink-btn:hover { text-decoration: underline; }
 
-/* Keyframes */
 @keyframes wFadeIn { from { opacity: 0 } to { opacity: 1 } }
 @keyframes wFadeUp { from { opacity: 0; transform: translateY(12px) } to { opacity: 1; transform: translateY(0) } }
 @keyframes wSpin { to { transform: rotate(360deg) } }
 
-/* Safe areas */
 @supports (padding: max(0px)) {
   .welcome-page {
     padding-top: max(16px, env(safe-area-inset-top));
